@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Laboratório Vestibular: aprenda os conceitos do vestibular mexendo neles, matéria por matéria." />
+    <meta name="theme-color" content="#fbf7f0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Laboratório Vestibular</title>
+    <script>
+      // aplica o tema salvo antes da primeira pintura, para não piscar
+      try {
+        var t = localStorage.getItem('lv:v1:tema')
+        if (t === 'claro' || t === 'escuro') document.documentElement.dataset.theme = t === 'claro' ? 'light' : 'dark'
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
