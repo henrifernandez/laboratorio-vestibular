@@ -95,7 +95,7 @@ export function GraficoFuncao({ funcao, janela, rotulo, realces = [], valores = 
         <g>
           <Point x={0} y={c.interceptoY} color="var(--ink)" />
           {valores && (
-            <Text x={0} y={c.interceptoY} attach="ne" attachDistance={10} size={14}>
+            <Text x={0} y={c.interceptoY} attach="nw" attachDistance={10} size={14}>
               {`(0; ${fmt(c.interceptoY)})`}
             </Text>
           )}
