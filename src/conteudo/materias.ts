@@ -44,7 +44,7 @@ export const MATERIAS: MateriaInfo[] = [
       t('geometria', 'Geometria plana e espacial', 'Sólidos, planificações, semelhança e Pitágoras.'),
       t('combinatoria', 'Análise combinatória e probabilidade', 'Árvores de possibilidades e experimentos.', true, 12),
       t('pa-pg', 'PA e PG', 'Sequências que crescem como escadas e blocos.', true, 12),
-      t('trigonometria', 'Trigonometria', 'O círculo trigonométrico desenhando seno e cosseno.'),
+      t('trigonometria', 'Trigonometria', 'O círculo trigonométrico desenhando seno e cosseno.', true, 12),
       t('geometria-analitica', 'Geometria analítica', 'Retas e circunferências por pontos arrastáveis.'),
       t('estatistica', 'Estatística', 'Média, mediana e moda mudando com os dados.', true, 12),
     ],

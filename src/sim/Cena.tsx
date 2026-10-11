@@ -21,6 +21,8 @@ interface Props {
   passoY?: number
   /** altura em pixels (padrão: responsiva) */
   altura?: number
+  /** mantém a proporção entre os eixos (círculos continuam círculos) */
+  proporcao?: boolean
 }
 
 /** Altura da cena: menor no celular para sobrar espaço para os controles. */
@@ -36,7 +38,7 @@ function useAltura() {
 }
 
 /** Área de simulação responsiva, com zoom (roda, pinça, teclado) e coordenadas do mundo real. */
-export function Cena({ janela, rotulo, children, chaveReinicio = 0, grade = true, zoom = false, passoX, passoY, altura: alturaFixa }: Props) {
+export function Cena({ janela, rotulo, children, chaveReinicio = 0, grade = true, zoom = false, passoX, passoY, altura: alturaFixa, proporcao = false }: Props) {
   const alturaAuto = useAltura()
   const altura = alturaFixa ?? alturaAuto
   return (
@@ -49,7 +51,7 @@ export function Cena({ janela, rotulo, children, chaveReinicio = 0, grade = true
       <Mafs
         key={chaveReinicio}
         height={altura}
-        preserveAspectRatio={false}
+        preserveAspectRatio={proporcao ? 'contain' : false}
         viewBox={{ x: [janela.xmin, janela.xmax], y: [janela.ymin, janela.ymax], padding: 0 }}
         pan={zoom}
         zoom={zoom ? { min: 0.4, max: 4 } : false}

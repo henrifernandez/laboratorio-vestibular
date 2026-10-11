@@ -18,6 +18,7 @@ export const MODULOS: Record<string, Carregador> = {
   'matematica/pa-pg': () => import('./matematica/pa-pg'),
   'matematica/estatistica': () => import('./matematica/estatistica'),
   'matematica/combinatoria': () => import('./matematica/combinatoria'),
+  'matematica/trigonometria': () => import('./matematica/trigonometria'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
