@@ -27,7 +27,7 @@ export type FuncaoNumerica = (x: number) => number
 export type ResultadoCompilar = { ok: true; fn: FuncaoNumerica } | { ok: false; erro: string }
 
 const FUNCOES_PERMITIDAS = new Set(['sqrt', 'abs', 'exp', 'log', 'ln', 'log2', 'log10', 'sin', 'cos', 'tan'])
-const SIMBOLOS_PERMITIDOS = new Set(['x', 'e', 'pi'])
+const CONSTANTES_PERMITIDAS = ['e', 'pi']
 const OPERADORES_PERMITIDOS = new Set(['unaryMinus', 'unaryPlus', 'add', 'subtract', 'multiply', 'divide', 'pow'])
 
 /** log(x) é base 10; log(x, b) usa a base b; ln é natural. Fora do domínio vira NaN. */
@@ -52,7 +52,7 @@ const FUNCOES_ESCOPO = {
 const CONSTANTES = { e: Math.E, pi: Math.PI }
 
 /** Vírgula decimal (0,5) vira ponto, mas a vírgula que separa argumentos (log(x, 2)) fica. */
-function normalizar(entrada: string): string {
+function normalizar(entrada: string, variavel: string): string {
   const s = entrada
     .toLowerCase()
     .replace(/[−–—]/g, '-')
@@ -78,11 +78,14 @@ function normalizar(entrada: string): string {
     } else saida += c
   }
   // x(x-1), e(x), pi(2): variável ou constante seguida de parêntese é multiplicação
-  return saida.replace(/(?<![a-z])(x|e|pi)\s*\(/g, '$1*(').replace(/\)\s*\(/g, ')*(')
+  const nomes = [variavel, ...CONSTANTES_PERMITIDAS].join('|')
+  return saida.replace(new RegExp(`(?<![a-z])(${nomes})\\s*\\(`, 'g'), '$1*(').replace(/\)\s*\(/g, ')*(')
 }
 
-export function compilar(entrada: string): ResultadoCompilar {
-  const texto = normalizar(entrada).trim()
+/** Compila a fórmula digitada. A variável é x por padrão (n para termos de sequências). */
+export function compilar(entrada: string, variavel = 'x'): ResultadoCompilar {
+  const simbolosPermitidos = new Set([variavel, ...CONSTANTES_PERMITIDAS])
+  const texto = normalizar(entrada, variavel).trim()
   if (texto === '') return { ok: false, erro: 'Digite uma fórmula.' }
   let no
   try {
@@ -101,7 +104,7 @@ export function compilar(entrada: string): ResultadoCompilar {
         break
       case 'SymbolNode': {
         const nome = (n as unknown as { name: string }).name
-        if (!nomesDeFuncao.has(n) && !SIMBOLOS_PERMITIDOS.has(nome)) erro = `Não conheço "${nome}". Use só x.`
+        if (!nomesDeFuncao.has(n) && !simbolosPermitidos.has(nome)) erro = `Não conheço "${nome}". Use só ${variavel}.`
         break
       }
       case 'FunctionNode': {
@@ -130,7 +133,7 @@ export function compilar(entrada: string): ResultadoCompilar {
 
   const fn: FuncaoNumerica = (x) => {
     try {
-      const r: unknown = codigo.evaluate({ ...FUNCOES_ESCOPO, ...CONSTANTES, x })
+      const r: unknown = codigo.evaluate({ ...FUNCOES_ESCOPO, ...CONSTANTES, [variavel]: x })
       return typeof r === 'number' && Number.isFinite(r) ? r : NaN
     } catch {
       return NaN
@@ -138,7 +141,7 @@ export function compilar(entrada: string): ResultadoCompilar {
   }
   // avalia uma vez para pegar erros de aridade (ex.: sqrt(1, 2)) antes de aceitar
   try {
-    codigo.evaluate({ ...FUNCOES_ESCOPO, ...CONSTANTES, x: 1 })
+    codigo.evaluate({ ...FUNCOES_ESCOPO, ...CONSTANTES, [variavel]: 1 })
   } catch {
     return { ok: false, erro: 'Confira os argumentos das funções.' }
   }
@@ -167,8 +170,9 @@ export function equivalentes(
   alvo: FuncaoNumerica,
   dominio: { min: number; max: number },
   pontos = 20,
+  variavel = 'x',
 ): Equivalencia {
-  const r = compilar(entrada)
+  const r = compilar(entrada, variavel)
   if (!r.ok) return { ok: false, erro: r.erro, errados: [] }
   const errados: PontoErrado[] = []
   for (let i = 0; i < pontos; i++) {

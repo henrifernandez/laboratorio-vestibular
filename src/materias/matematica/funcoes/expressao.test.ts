@@ -82,3 +82,26 @@ describe('equivalentes', () => {
     expect(r.erro).toBeTruthy()
   })
 })
+
+describe('variável configurável', () => {
+  it('aceita n como variável (termo geral de sequências)', () => {
+    const r = compilar('3*2^(n-1)', 'n')
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.fn(4)).toBe(24)
+  })
+  it('multiplicação implícita com n: 2n+1 e n(n+1)', () => {
+    const a = compilar('2n+1', 'n')
+    const b = compilar('n(n+1)', 'n')
+    expect(a.ok && a.fn(5)).toBe(11)
+    expect(b.ok && b.fn(3)).toBe(12)
+  })
+  it('rejeita o x quando a variável é n, e vice-versa', () => {
+    expect(compilar('x+1', 'n').ok).toBe(false)
+    expect(compilar('n+1').ok).toBe(false)
+  })
+  it('equivalentes aceita a variável', () => {
+    const alvo = (n: number) => 5 + (n - 1) * 3
+    expect(equivalentes('3n+2', alvo, { min: 1, max: 10 }, 20, 'n').ok).toBe(true)
+    expect(equivalentes('3n+1', alvo, { min: 1, max: 10 }, 20, 'n').ok).toBe(false)
+  })
+})

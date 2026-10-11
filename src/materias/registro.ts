@@ -15,6 +15,7 @@ type Carregador = () => Promise<{ default: ModuloTema }>
 export const MODULOS: Record<string, Carregador> = {
   'matematica/funcoes': () => import('./matematica/funcoes'),
   'matematica/porcentagem-juros': () => import('./matematica/juros'),
+  'matematica/pa-pg': () => import('./matematica/pa-pg'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
