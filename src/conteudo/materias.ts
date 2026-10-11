@@ -40,7 +40,7 @@ export const MATERIAS: MateriaInfo[] = [
     descricao: 'Funções, juros, geometria, probabilidade e mais, mexendo nos gráficos.',
     temas: [
       t('funcoes', 'Funções', 'Afim, quadrática, exponencial e logarítmica: veja o gráfico mudar com os coeficientes.', true, 15),
-      t('porcentagem-juros', 'Porcentagem e juros', 'Juros simples e compostos lado a lado.'),
+      t('porcentagem-juros', 'Porcentagem e juros', 'Juros simples e compostos lado a lado.', true, 12),
       t('geometria', 'Geometria plana e espacial', 'Sólidos, planificações, semelhança e Pitágoras.'),
       t('combinatoria', 'Análise combinatória e probabilidade', 'Árvores de possibilidades e experimentos.'),
       t('pa-pg', 'PA e PG', 'Sequências que crescem como escadas e blocos.'),

@@ -14,6 +14,7 @@ type Carregador = () => Promise<{ default: ModuloTema }>
 /** Um tema por entrada, carregado só quando a pessoa abre a página (code splitting por rota). */
 export const MODULOS: Record<string, Carregador> = {
   'matematica/funcoes': () => import('./matematica/funcoes'),
+  'matematica/porcentagem-juros': () => import('./matematica/juros'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {

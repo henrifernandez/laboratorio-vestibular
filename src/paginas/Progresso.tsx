@@ -9,6 +9,10 @@ const NOME_DESAFIO: Record<string, string> = {
   detetive: 'Detetive de gráfico',
   encaixe: 'Encaixe',
   alvo: 'Alvo',
+  cruzamento: 'Qual cresce mais e quando',
+  sucessivos: 'Aumentos e descontos sucessivos',
+  montante: 'Montante e juros',
+  regime: 'Qual é o regime?',
 }
 
 function descrever(chave: string) {

@@ -16,6 +16,11 @@ interface Props {
   chaveReinicio?: number
   grade?: boolean
   zoom?: boolean
+  /** espaçamento das linhas da grade em cada eixo (padrão: 1) */
+  passoX?: number
+  passoY?: number
+  /** altura em pixels (padrão: responsiva) */
+  altura?: number
 }
 
 /** Altura da cena: menor no celular para sobrar espaço para os controles. */
@@ -31,8 +36,9 @@ function useAltura() {
 }
 
 /** Área de simulação responsiva, com zoom (roda, pinça, teclado) e coordenadas do mundo real. */
-export function Cena({ janela, rotulo, children, chaveReinicio = 0, grade = true, zoom = false }: Props) {
-  const altura = useAltura()
+export function Cena({ janela, rotulo, children, chaveReinicio = 0, grade = true, zoom = false, passoX, passoY, altura: alturaFixa }: Props) {
+  const alturaAuto = useAltura()
+  const altura = alturaFixa ?? alturaAuto
   return (
     <div
       role="group"
@@ -48,7 +54,7 @@ export function Cena({ janela, rotulo, children, chaveReinicio = 0, grade = true
         pan={zoom}
         zoom={zoom ? { min: 0.4, max: 4 } : false}
       >
-        {grade && <Coordinates.Cartesian subdivisions={false} />}
+        {grade && <Coordinates.Cartesian subdivisions={false} xAxis={passoX ? { lines: passoX } : undefined} yAxis={passoY ? { lines: passoY } : undefined} />}
         {children}
       </Mafs>
     </div>
