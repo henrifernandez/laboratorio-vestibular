@@ -1,40 +1,50 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MATERIAS } from '@/conteudo/materias'
 import { maisErrados, resumoPorTema } from '@/desafios/progresso'
 import { useProgresso } from '@/desafios/useProgresso'
+import { carregarTema, temaDisponivel } from '@/materias/registro'
 
-const NOME_DESAFIO: Record<string, string> = {
-  esboce: 'Esboce a função',
-  formula: 'Qual é a fórmula',
-  detetive: 'Detetive de gráfico',
-  encaixe: 'Encaixe',
-  alvo: 'Alvo',
-  cruzamento: 'Qual cresce mais e quando',
-  sucessivos: 'Aumentos e descontos sucessivos',
-  montante: 'Montante e juros',
-  regime: 'Qual é o regime?',
-}
-
-function descrever(chave: string) {
-  const [id, nivel] = chave.split(':')
-  const [materia, tema, slug] = (id ?? '').split('/')
-  const m = MATERIAS.find((x) => x.id === materia)
-  const t = m?.temas.find((x) => x.id === tema)
-  return {
-    id: id ?? chave,
-    nivel: Number(nivel) || 1,
-    texto: `${m?.nome ?? materia} / ${t?.titulo ?? tema} / ${NOME_DESAFIO[slug ?? ''] ?? slug} (nível ${nivel})`,
-  }
+/** Nome legível de cada desafio, lido dos próprios temas (carregados só se houver progresso neles). */
+function useTitulos(chaves: string[]) {
+  const [titulos, setTitulos] = useState<Record<string, string>>({})
+  const temas = useMemo(() => [...new Set(chaves.map((c) => (c.split(':')[0] ?? '').split('/').slice(0, 2).join('/')))].filter(Boolean), [chaves])
+  useEffect(() => {
+    let cancelado = false
+    for (const t of temas) {
+      const [materia, tema] = t.split('/') as [string, string]
+      if (!temaDisponivel(materia, tema)) continue
+      carregarTema(materia, tema)
+        .then((mod) => {
+          if (cancelado) return
+          setTitulos((atual) => ({ ...atual, ...Object.fromEntries(mod.default.desafios.map((d) => [d.desafio.id, d.desafio.titulo])) }))
+        })
+        .catch(() => {})
+    }
+    return () => {
+      cancelado = true
+    }
+  }, [temas])
+  return titulos
 }
 
 export default function Progresso() {
   const progresso = useProgresso()
   const errados = maisErrados(progresso).slice(0, 8)
-  const linhas = MATERIAS.flatMap((m) =>
-    m.temas
-      .filter((t) => t.disponivel)
-      .map((t) => ({ m, t, ...resumoPorTema(progresso, m.id, t.id) })),
-  )
+  const titulos = useTitulos(Object.keys(progresso))
+  const linhas = MATERIAS.flatMap((m) => m.temas.filter((t) => t.disponivel).map((t) => ({ m, t, ...resumoPorTema(progresso, m.id, t.id) })))
+
+  const descrever = (chave: string) => {
+    const [id, nivel] = chave.split(':')
+    const [materia, tema, slug] = (id ?? '').split('/')
+    const m = MATERIAS.find((x) => x.id === materia)
+    const t = m?.temas.find((x) => x.id === tema)
+    return {
+      id: id ?? chave,
+      nivel: Number(nivel) || 1,
+      texto: `${m?.nome ?? materia} / ${t?.titulo ?? tema} / ${titulos[id ?? ''] ?? slug} (nível ${nivel})`,
+    }
+  }
 
   return (
     <div className="container-site grid gap-8 py-8">
@@ -90,7 +100,10 @@ export default function Progresso() {
               return (
                 <li key={e.id} className="cartao flex flex-wrap items-center justify-between gap-3 p-3">
                   <span>
-                    {d.texto} <span className="chip num">{e.erros} {e.erros === 1 ? 'erro' : 'erros'}</span>
+                    {d.texto}{' '}
+                    <span className="chip num">
+                      {e.erros} {e.erros === 1 ? 'erro' : 'erros'}
+                    </span>
                   </span>
                   <Link to={`/revisao?foco=${encodeURIComponent(d.id)}&nivel=${d.nivel}`} className="btn btn-primario no-underline">
                     Praticar
