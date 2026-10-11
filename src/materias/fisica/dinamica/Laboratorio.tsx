@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Line, Plot, Point, Text } from 'mafs'
 import { Link2 } from 'lucide-react'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
@@ -6,8 +6,8 @@ import { BotaoReiniciar } from '@/sim/BotaoReiniciar'
 import { Cena } from '@/sim/Cena'
 import { ControleDeslizante } from '@/sim/ControleDeslizante'
 import { ControlesDeTempo } from '@/sim/ControlesDeTempo'
-import { useLaco } from '@/sim/laco'
 import { LaboratorioTelas } from '@/sim/LaboratorioTelas'
+import { useAnimacao } from '@/sim/useAnimacao'
 import { PainelDeVisibilidade } from '@/sim/PainelDeVisibilidade'
 import { G, angulos, atwood, forcaResultante, mesaComPolia, plano } from './calculo'
 import { DEFINICOES_DINAMICA } from './definicoes'
@@ -15,39 +15,6 @@ import { BarrasPlano, MesaForcas, Rampa, ReguaAngulo, SistemaPolia, setasDoPlano
 import { Pista } from '../cinematica/Visuais'
 
 const fmt = (n: number, c = 2) => String(Math.round(n * 10 ** c) / 10 ** c).replace('.', ',')
-
-/** Liga o tempo da simulação (guardado na URL) ao laço de passo fixo, parando no instante final T. */
-function useAnimacao(t: number, T: number, setT: (t: number) => void) {
-  const tRef = useRef(t)
-  const TRef = useRef(T)
-  const setRef = useRef(setT)
-  const pararRef = useRef<(v: boolean) => void>(() => {})
-  const laco = useLaco(1 / 60, (dt) => {
-    tRef.current = Math.min(TRef.current, tRef.current + dt)
-    setRef.current(Math.round(tRef.current * 100) / 100)
-    if (tRef.current >= TRef.current) pararRef.current(false)
-  })
-  useEffect(() => {
-    setRef.current = setT
-    pararRef.current = laco.setRodando
-    tRef.current = t
-    TRef.current = T
-  })
-  const { rodando, setRodando, velocidade, setVelocidade, passoUnico } = laco
-  const alternar = () => {
-    if (!rodando && t >= T) {
-      tRef.current = 0
-      setT(0)
-    }
-    setRodando(!rodando)
-  }
-  const passo = (dt: number) => {
-    tRef.current = Math.min(T, tRef.current + dt)
-    setT(Math.round(tRef.current * 100) / 100)
-    passoUnico()
-  }
-  return { rodando, setRodando, velocidade, setVelocidade, alternar, passo }
-}
 
 function BotaoLink() {
   const [copiado, setCopiado] = useState(false)
