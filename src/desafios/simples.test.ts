@@ -45,6 +45,11 @@ describe('lerNumero', () => {
     expect(lerNumero('-2')).toBe(-2)
     expect(lerNumero('1/4')).toBe(0.25)
   })
+  it('decimal com ponto que começa em zero não é separador de milhar', () => {
+    expect(lerNumero('0.125')).toBe(0.125)
+    expect(lerNumero('0.500')).toBe(0.5)
+    expect(lerNumero('1.500')).toBe(1500)
+  })
   it('texto sem número vira null', () => {
     expect(lerNumero('')).toBeNull()
     expect(lerNumero('abc')).toBeNull()

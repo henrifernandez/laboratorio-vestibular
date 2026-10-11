@@ -79,7 +79,7 @@ export function lerNumero(texto: string): number | null {
   }
   let limpo = t
   if (t.includes(',')) limpo = t.replace(/\./g, '').replace(',', '.')
-  else if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) limpo = t.replace(/\./g, '')
+  else if (/^-?[1-9]\d{0,2}(\.\d{3})+$/.test(t)) limpo = t.replace(/\./g, '')
   const n = Number(limpo)
   return Number.isFinite(n) ? n : null
 }
