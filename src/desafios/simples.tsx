@@ -235,7 +235,11 @@ export function criarDefNum<D = unknown>(
     materia: meta.materia,
     tema: meta.tema,
     titulo: meta.titulo,
-    gerar: (semente, nivel) => meta.gerar(criarRng(semente * 2246822519 + nivel * 131), nivel, semente),
+    gerar: (semente, nivel) => {
+      const inst = meta.gerar(criarRng(semente * 2246822519 + nivel * 131), nivel, semente)
+      // dois erros típicos com o mesmo valor: vale o primeiro
+      return { ...inst, erros: inst.erros.filter((e, i) => inst.erros.findIndex((x) => Math.abs(x.valor - e.valor) < 1e-9) === i) }
+    },
     corrigir: (inst, resposta) => corrigirNum(inst, resposta),
     dicas: (inst) => inst.dicas,
     explicar: (inst) => inst.resolucao,
