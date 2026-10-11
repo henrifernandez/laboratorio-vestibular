@@ -16,6 +16,7 @@ export const MODULOS: Record<string, Carregador> = {
   'matematica/funcoes': () => import('./matematica/funcoes'),
   'matematica/porcentagem-juros': () => import('./matematica/juros'),
   'matematica/pa-pg': () => import('./matematica/pa-pg'),
+  'matematica/estatistica': () => import('./matematica/estatistica'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
