@@ -1,0 +1,140 @@
+/* Tokens de design do Laboratório Vestibular.
+   Direção: "caderno de laboratório" — papel quente, tinta escura, linhas finas,
+   títulos serifados e números tabulares. Tema claro por padrão; escuro segue o sistema
+   e pode ser forçado com data-theme no <html>. */
+
+:root {
+  color-scheme: light;
+
+  /* superfícies e texto */
+  --paper: #fbf7f0;
+  --surface: #fffdf8;
+  --surface-2: #f3ede2;
+  --ink: #1f1b16;
+  --ink-muted: #5c5348;
+  --line: #ddd3c3;
+  --line-strong: #bdb09b;
+  --focus: #1d4ed8;
+
+  /* feedback */
+  --ok: #166534;
+  --ok-bg: #e3f3e6;
+  --erro: #9f1d1d;
+  --erro-bg: #fbe6e3;
+  --aviso: #8a4b00;
+  --aviso-bg: #fbeed4;
+
+  /* cor de cada matéria (como fundo de botão, com texto --on-accent) */
+  --accent-matematica: #1d4ed8;
+  --accent-fisica: #b45309;
+  --accent-quimica: #0f766e;
+  --accent-biologia: #15803d;
+  --accent-historia: #a63a28;
+  --accent-geografia: #0b5c7a;
+  --accent-filosofia: #6d28d9;
+  --accent-sociologia: #be185d;
+  --on-accent: #ffffff;
+
+  /* cores de gráfico (acompanham a matéria) */
+  --curva-alvo: #2f2a24;
+  --curva-usuario: var(--accent);
+  --grade: #e6dccb;
+
+  /* espaçamento, raios, sombras */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --radius-sm: 0.5rem;
+  --radius: 0.875rem;
+  --radius-lg: 1.25rem;
+  --shadow-1: 0 1px 2px rgb(60 45 20 / 0.08), 0 1px 1px rgb(60 45 20 / 0.04);
+  --shadow-2: 0 6px 18px -6px rgb(60 45 20 / 0.18), 0 2px 4px rgb(60 45 20 / 0.06);
+
+  /* tipografia */
+  --font-titulo: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-texto: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* movimento */
+  --ease-mola: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-rapida: 140ms;
+  --dur-media: 260ms;
+
+  --accent: var(--accent-matematica);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: #17140f;
+    --surface: #211d17;
+    --surface-2: #2b261e;
+    --ink: #f3ede2;
+    --ink-muted: #b8ae9f;
+    --line: #3a342a;
+    --line-strong: #5a5143;
+    --focus: #8ab4ff;
+    --ok: #86e0a0;
+    --ok-bg: #16301e;
+    --erro: #ff9e92;
+    --erro-bg: #3a1c19;
+    --aviso: #f4c36a;
+    --aviso-bg: #36270f;
+    --accent-matematica: #6ca0ff;
+    --accent-fisica: #fb923c;
+    --accent-quimica: #2dd4bf;
+    --accent-biologia: #4ade80;
+    --accent-historia: #ee8a77;
+    --accent-geografia: #4fb8dc;
+    --accent-filosofia: #a78bfa;
+    --accent-sociologia: #f472b6;
+    --on-accent: #14110d;
+    --curva-alvo: #e9e1d2;
+    --grade: #342e24;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #17140f;
+  --surface: #211d17;
+  --surface-2: #2b261e;
+  --ink: #f3ede2;
+  --ink-muted: #b8ae9f;
+  --line: #3a342a;
+  --line-strong: #5a5143;
+  --focus: #8ab4ff;
+  --ok: #86e0a0;
+  --ok-bg: #16301e;
+  --erro: #ff9e92;
+  --erro-bg: #3a1c19;
+  --aviso: #f4c36a;
+  --aviso-bg: #36270f;
+  --accent-matematica: #6ca0ff;
+  --accent-fisica: #fb923c;
+  --accent-quimica: #2dd4bf;
+  --accent-biologia: #4ade80;
+  --accent-historia: #ee8a77;
+  --accent-geografia: #4fb8dc;
+  --accent-filosofia: #a78bfa;
+  --accent-sociologia: #f472b6;
+  --on-accent: #14110d;
+  --curva-alvo: #e9e1d2;
+  --grade: #342e24;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
+}
+
+[data-materia='matematica'] { --accent: var(--accent-matematica); }
+[data-materia='fisica'] { --accent: var(--accent-fisica); }
+[data-materia='quimica'] { --accent: var(--accent-quimica); }
+[data-materia='biologia'] { --accent: var(--accent-biologia); }
+[data-materia='historia'] { --accent: var(--accent-historia); }
+[data-materia='geografia'] { --accent: var(--accent-geografia); }
+[data-materia='filosofia'] { --accent: var(--accent-filosofia); }
+[data-materia='sociologia'] { --accent: var(--accent-sociologia); }
