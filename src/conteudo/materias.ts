@@ -41,7 +41,7 @@ export const MATERIAS: MateriaInfo[] = [
     temas: [
       t('funcoes', 'Funções', 'Afim, quadrática, exponencial e logarítmica: veja o gráfico mudar com os coeficientes.', true, 15),
       t('porcentagem-juros', 'Porcentagem e juros', 'Juros simples e compostos lado a lado.', true, 12),
-      t('geometria', 'Geometria plana e espacial', 'Sólidos, planificações, semelhança e Pitágoras.'),
+      t('geometria', 'Geometria plana e espacial', 'Sólidos, planificações, semelhança e Pitágoras.', true, 12),
       t('combinatoria', 'Análise combinatória e probabilidade', 'Árvores de possibilidades e experimentos.', true, 12),
       t('pa-pg', 'PA e PG', 'Sequências que crescem como escadas e blocos.', true, 12),
       t('trigonometria', 'Trigonometria', 'O círculo trigonométrico desenhando seno e cosseno.', true, 12),

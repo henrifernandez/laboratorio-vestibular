@@ -112,13 +112,15 @@ export function corrigirNum(inst: InstanciaNum, texto: string): Correcao {
    Telas
    ====================================================================== */
 
-export type VisualProps<I> = { inst: I }
+export type VisualProps<I> = { inst: I; /** resultado da correção, depois que a pessoa responde */ correcao?: Correcao | null }
 
-function EntradaMulti<D>({ Visual }: { Visual?: ComponentType<VisualProps<InstanciaMulti<D>>> }) {
+export type OpcaoVisualProps<I> = { inst: I; id: string }
+
+function EntradaMulti<D>({ Visual, Opcao }: { Visual?: ComponentType<VisualProps<InstanciaMulti<D>>>; Opcao?: ComponentType<OpcaoVisualProps<InstanciaMulti<D>>> }) {
   return function Entrada({ inst, resposta, onChange, correcao, bloqueado }: EntradaProps<InstanciaMulti<D>, string>) {
     return (
       <div className="grid gap-3">
-        {Visual && <Visual inst={inst} />}
+        {Visual && <Visual inst={inst} correcao={correcao} />}
         <p className="text-lg">{inst.enunciado}</p>
         <div role="radiogroup" aria-label="Alternativas" className="grid gap-2 sm:grid-cols-2">
           {inst.opcoes.map((o) => {
@@ -143,7 +145,10 @@ function EntradaMulti<D>({ Visual }: { Visual?: ComponentType<VisualProps<Instan
                   onChange={() => onChange(o.id)}
                   style={{ accentColor: 'var(--accent)' }}
                 />
-                <span className="flex-1">{o.rotulo}</span>
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  {Opcao && <Opcao inst={inst} id={o.id} />}
+                  <span>{o.rotulo}</span>
+                </span>
                 {certa && <CheckCircle2 size={18} aria-label="resposta certa" style={{ color: 'var(--ok)' }} />}
                 {errada && <XCircle size={18} aria-label="sua resposta, errada" style={{ color: 'var(--erro)' }} />}
               </label>
@@ -156,11 +161,11 @@ function EntradaMulti<D>({ Visual }: { Visual?: ComponentType<VisualProps<Instan
 }
 
 function EntradaNum<D>({ Visual }: { Visual?: ComponentType<VisualProps<InstanciaNum<D>>> }) {
-  return function Entrada({ inst, resposta, onChange, bloqueado }: EntradaProps<InstanciaNum<D>, string>) {
+  return function Entrada({ inst, resposta, onChange, bloqueado, correcao }: EntradaProps<InstanciaNum<D>, string>) {
     const id = useId()
     return (
       <div className="grid gap-3">
-        {Visual && <Visual inst={inst} />}
+        {Visual && <Visual inst={inst} correcao={correcao} />}
         <p className="text-lg">{inst.enunciado}</p>
         <div className="grid gap-1">
           <label htmlFor={id} className="font-semibold">
@@ -203,6 +208,8 @@ export function criarDefMulti<D = unknown>(
   meta: MetaDesafio & {
     gerar: (rng: () => number, nivel: Nivel, semente: number) => InstanciaMulti<D>
     Visual?: ComponentType<VisualProps<InstanciaMulti<D>>>
+    /** miniatura mostrada dentro de cada alternativa (por exemplo, uma planificação) */
+    Opcao?: ComponentType<OpcaoVisualProps<InstanciaMulti<D>>>
   },
 ): DefinicaoDesafio<InstanciaMulti<D>, string> & { desafio: Desafio<InstanciaMulti<D>, string> } {
   const desafio: Desafio<InstanciaMulti<D>, string> = {
@@ -220,7 +227,7 @@ export function criarDefMulti<D = unknown>(
     instrucao: meta.instrucao,
     respostaInicial: () => '',
     podeEnviar: (r) => r !== '',
-    Entrada: EntradaMulti<D>({ Visual: meta.Visual }),
+    Entrada: EntradaMulti<D>({ Visual: meta.Visual, Opcao: meta.Opcao }),
   }
 }
 
