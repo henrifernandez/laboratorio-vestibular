@@ -1,14 +1,8 @@
 import type { Funcao } from '@/materias/matematica/funcoes/modelo'
+import type { PareEPense, SecaoResumo } from '../tipos'
 
 /** O que o gráfico da etapa deve destacar. */
 export type Realce = 'raizes' | 'vertice' | 'intercepto' | 'assintota'
-
-export interface PareEPense {
-  pergunta: string
-  opcoes: string[]
-  certa: number
-  explicacao: string
-}
 
 export interface PassoEntenda {
   titulo: string
@@ -112,14 +106,6 @@ export const PASSOS_ENTENDA: PassoEntenda[] = [
     },
   },
 ]
-
-export interface SecaoResumo {
-  titulo: string
-  /** LaTeX de fórmulas essenciais */
-  formulas: { rotulo: string; tex: string }[]
-  ideias: string[]
-  pegadinhas: string[]
-}
 
 export const RESUMO_FUNCOES: SecaoResumo[] = [
   {
