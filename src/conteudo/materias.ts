@@ -55,7 +55,7 @@ export const MATERIAS: MateriaInfo[] = [
     descricao: 'Cinemática, dinâmica, termologia e eletricidade em simulações.',
     temas: [
       t('cinematica', 'Cinemática', 'Posição, velocidade, aceleração e lançamentos.', true, 12),
-      t('dinamica', 'Dinâmica', 'Forças, atrito e plano inclinado.'),
+      t('dinamica', 'Dinâmica', 'Forças, atrito e plano inclinado.', true, 12),
       t('termologia', 'Termologia e calorimetria', 'Curvas de aquecimento, misturas e gases.'),
       t('eletricidade', 'Eletricidade', 'Circuitos em série e paralelo, consumo.'),
     ],

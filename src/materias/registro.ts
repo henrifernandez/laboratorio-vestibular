@@ -22,6 +22,7 @@ export const MODULOS: Record<string, Carregador> = {
   'matematica/geometria-analitica': () => import('./matematica/geometria-analitica'),
   'matematica/geometria': () => import('./matematica/geometria'),
   'fisica/cinematica': () => import('./fisica/cinematica'),
+  'fisica/dinamica': () => import('./fisica/dinamica'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
