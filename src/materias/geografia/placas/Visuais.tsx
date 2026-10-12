@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { fonteLegivel, useLargura } from '@/lib/useLargura'
 import { ALTURA, LARGURA, LIMITES, NIVEL_MAR, descreverCena, idadeDaCrosta, montarCena, type CorForma, type Crosta, type IdLimite } from './calculo'
 
 const COR: Record<CorForma, string> = {
@@ -9,17 +10,19 @@ const COR: Record<CorForma, string> = {
   agua: 'var(--geo-agua)',
 }
 
-const TEXTO = { fill: 'var(--ink)', stroke: 'var(--surface)', strokeWidth: 4, paintOrder: 'stroke' as const, fontSize: 15, fontWeight: 600 }
+const TEXTO = { fill: 'var(--ink)', stroke: 'var(--surface)', strokeWidth: 4, paintOrder: 'stroke' as const, fontWeight: 600 }
 
 const pts = (p: [number, number][]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
 
 /** Corte (ou vista de cima, nas falhas transformantes) de um limite entre placas. `progresso` vai de 0 a 1. */
 export function CorteSvg({ limite, progresso, ordem = ['oceanica', 'continental'], rotulo }: { limite: IdLimite; progresso: number; ordem?: [Crosta, Crosta]; rotulo?: string }) {
   const id = useId().replace(/:/g, '')
+  const [ref, largura] = useLargura<SVGSVGElement>()
+  const fs = (b: number) => fonteLegivel(b, largura)
   const cena = montarCena(limite, progresso, ordem)
   const planta = cena.modo === 'planta'
   return (
-    <svg viewBox={`0 0 ${LARGURA} ${ALTURA}`} role="img" aria-label={rotulo ?? descreverCena(limite, progresso)} className="block h-auto w-full rounded-lg border border-[var(--line)]">
+    <svg ref={ref} viewBox={`0 0 ${LARGURA} ${ALTURA}`} role="img" aria-label={rotulo ?? descreverCena(limite, progresso)} className="block h-auto w-full rounded-lg border border-[var(--line)]">
       <defs>
         <marker id={`seta-${id}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0,0 L10,5 L0,10 z" fill="var(--ink)" />
@@ -31,7 +34,7 @@ export function CorteSvg({ limite, progresso, ordem = ['oceanica', 'continental'
         <>
           <rect x={0} y={0} width={LARGURA} height={ALTURA} fill="var(--geo-manto)" fillOpacity={0.45} />
           <rect x={0} y={0} width={LARGURA} height={NIVEL_MAR} fill="var(--geo-ar)" />
-          <text x={LARGURA - 8} y={ALTURA - 10} textAnchor="end" fill="var(--ink-muted)" fontSize={13}>
+          <text x={LARGURA - 8} y={ALTURA - 10} textAnchor="end" fill="var(--ink-muted)" fontSize={fs(13)}>
             manto (rocha quente e pastosa)
           </text>
         </>
@@ -61,12 +64,12 @@ export function CorteSvg({ limite, progresso, ordem = ['oceanica', 'continental'
         </>
       )}
       {cena.rotulos.map((r) => (
-        <text key={r.texto} x={r.x} y={r.y} textAnchor={r.ancora ?? 'start'} {...TEXTO}>
+        <text key={r.texto} x={r.x} y={r.y} textAnchor={r.ancora ?? 'start'} {...TEXTO} fontSize={fs(15)}>
           {r.texto}
         </text>
       ))}
       {!planta && (
-        <g fontSize={12} fill="var(--ink)">
+        <g fontSize={fs(12)} fill="var(--ink)">
           <text x={8} y={NIVEL_MAR - 6} stroke="var(--surface)" strokeWidth={3} paintOrder="stroke">
             nível do mar
           </text>
@@ -113,27 +116,29 @@ export const LegendaCorte = ({ planta = false }: { planta?: boolean }) => (
 
 /** Camadas da Terra em corte, fora de escala. */
 export function CamadasSvg({ destaque = null }: { destaque?: 'crosta' | 'manto' | 'nucleo' | 'litosfera' | null }) {
+  const [ref, largura] = useLargura<SVGSVGElement>()
+  const fs = (b: number) => fonteLegivel(b, largura)
   const aberta = (nome: string) => (destaque === null || destaque === nome ? 1 : 0.35)
   return (
-    <svg viewBox="0 0 640 260" role="img" aria-label="Corte da Terra em camadas, fora de escala: crosta muito fina por fora, manto espesso, núcleo externo líquido e núcleo interno sólido. A litosfera reúne a crosta e a parte superior rígida do manto, e flutua sobre a astenosfera." className="block h-auto w-full rounded-lg border border-[var(--line)]">
+    <svg ref={ref} viewBox="0 0 640 260" role="img" aria-label="Corte da Terra em camadas, fora de escala: crosta muito fina por fora, manto espesso, núcleo externo líquido e núcleo interno sólido. A litosfera reúne a crosta e a parte superior rígida do manto, e flutua sobre a astenosfera." className="block h-auto w-full rounded-lg border border-[var(--line)]">
       <rect width={640} height={260} fill="var(--surface)" />
       <circle cx={170} cy={130} r={118} fill="var(--geo-continente)" opacity={aberta('crosta')} stroke="var(--ink)" strokeOpacity={0.5} />
       <circle cx={170} cy={130} r={106} fill="var(--geo-manto)" opacity={aberta('manto')} stroke="var(--ink)" strokeOpacity={0.5} />
       <circle cx={170} cy={130} r={62} fill="var(--geo-magma)" opacity={aberta('nucleo')} stroke="var(--ink)" strokeOpacity={0.5} />
       <circle cx={170} cy={130} r={26} fill="var(--surface)" opacity={aberta('nucleo')} stroke="var(--ink)" strokeOpacity={0.6} />
-      <g fontSize={15} fill="var(--ink)" fontWeight={600}>
-        <text x={330} y={44} {...TEXTO}>crosta (5 a 70 km)</text>
+      <g fontSize={fs(15)} fill="var(--ink)" fontWeight={600}>
+        <text x={330} y={44} {...TEXTO} fontSize={fs(15)}>crosta (5 a 70 km)</text>
         <line x1={326} y1={40} x2={262} y2={34} stroke="var(--ink)" />
-        <text x={330} y={100} {...TEXTO}>manto (até cerca de 2.900 km)</text>
+        <text x={330} y={100} {...TEXTO} fontSize={fs(15)}>manto (até cerca de 2.900 km)</text>
         <line x1={326} y1={96} x2={248} y2={100} stroke="var(--ink)" />
-        <text x={330} y={160} {...TEXTO}>núcleo externo (líquido)</text>
+        <text x={330} y={160} {...TEXTO} fontSize={fs(15)}>núcleo externo (líquido)</text>
         <line x1={326} y1={156} x2={218} y2={140} stroke="var(--ink)" />
-        <text x={330} y={216} {...TEXTO}>núcleo interno (sólido)</text>
+        <text x={330} y={216} {...TEXTO} fontSize={fs(15)}>núcleo interno (sólido)</text>
         <line x1={326} y1={212} x2={186} y2={140} stroke="var(--ink)" />
       </g>
       <g opacity={aberta('litosfera')}>
         <path d="M 170 4 A 126 126 0 0 1 296 130" fill="none" stroke="var(--ink)" strokeWidth={3} strokeDasharray="2 5" strokeLinecap="round" />
-        <text x={560} y={244} textAnchor="end" fontSize={13} fill="var(--ink-muted)">pontilhado: litosfera (crosta + manto superior rígido)</text>
+        <text x={630} y={250} textAnchor="end" fontSize={fs(13)} fill="var(--ink-muted)">pontilhado: litosfera</text>
       </g>
     </svg>
   )
@@ -141,13 +146,14 @@ export function CamadasSvg({ destaque = null }: { destaque?: 'crosta' | 'manto' 
 
 /** Faixa de idade do assoalho oceânico, simétrica em torno da dorsal. */
 export function AssoalhoSvg({ meiaTaxa, posicaoKm, alcanceKm }: { meiaTaxa: number; posicaoKm: number; alcanceKm: number }) {
+  const [ref, largura] = useLargura<SVGSVGElement>()
+  const fs = (b: number) => fonteLegivel(b, largura)
   const W = 640
-  const idadeMax = idadeDaCrosta(alcanceKm, meiaTaxa)
   const x = (km: number) => W / 2 + (km / alcanceKm) * (W / 2 - 24)
   const faixas = 20
   const idade = idadeDaCrosta(posicaoKm, meiaTaxa)
   return (
-    <svg viewBox={`0 0 ${W} 170`} role="img" aria-label={`Faixas simétricas de idade do assoalho oceânico, com a dorsal no centro. Com meia-taxa de ${meiaTaxa} cm por ano, a crosta a ${Math.abs(posicaoKm)} km da dorsal tem cerca de ${idade.toFixed(0)} milhões de anos.`} className="block h-auto w-full rounded-lg border border-[var(--line)]">
+    <svg ref={ref} viewBox={`0 0 ${W} 170`} role="img" aria-label={`Faixas simétricas de idade do assoalho oceânico, com a dorsal no centro. Com meia-taxa de ${meiaTaxa} cm por ano, a crosta a ${Math.abs(posicaoKm)} km da dorsal tem cerca de ${idade.toFixed(0)} milhões de anos.`} className="block h-auto w-full rounded-lg border border-[var(--line)]">
       <rect width={W} height={170} fill="var(--surface)" />
       {Array.from({ length: faixas * 2 }, (_, i) => {
         const k = i < faixas ? i - faixas : i - faixas + 1
@@ -160,18 +166,18 @@ export function AssoalhoSvg({ meiaTaxa, posicaoKm, alcanceKm }: { meiaTaxa: numb
         return <rect key={i} x={x(km0)} y={40} width={x(km1) - x(km0) + 0.5} height={64} fill="var(--geo-nova)" fillOpacity={0.25 + 0.75 * t} />
       })}
       <line x1={W / 2} y1={30} x2={W / 2} y2={114} stroke="var(--geo-magma)" strokeWidth={4} />
-      <text x={W / 2} y={22} textAnchor="middle" fontSize={14} fontWeight={600} fill="var(--ink)">
+      <text x={W / 2} y={22} textAnchor="middle" fontSize={fs(14)} fontWeight={600} fill="var(--ink)">
         dorsal (idade 0)
       </text>
       <path d={`M ${x(posicaoKm)} 126 l -7 -12 h 14 z`} fill="var(--ink)" />
-      <text x={Math.min(Math.max(x(posicaoKm), 70), W - 70)} y={146} textAnchor="middle" fontSize={14} fontWeight={600} fill="var(--ink)">
+      <text x={Math.min(Math.max(x(posicaoKm), 70), W - 70)} y={146} textAnchor="middle" fontSize={fs(14)} fontWeight={600} fill="var(--ink)">
         {Math.abs(posicaoKm)} km · {idade.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} Ma
       </text>
-      <text x={14} y={162} fontSize={12} fill="var(--ink-muted)">
+      <text x={14} y={162} fontSize={fs(12)} fill="var(--ink-muted)">
         mais velha ←
       </text>
-      <text x={W - 14} y={162} textAnchor="end" fontSize={12} fill="var(--ink-muted)">
-        → mais velha ({idadeMax.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} Ma na borda)
+      <text x={W - 14} y={162} textAnchor="end" fontSize={fs(12)} fill="var(--ink-muted)">
+        → mais velha
       </text>
     </svg>
   )

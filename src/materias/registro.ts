@@ -37,6 +37,7 @@ export const MODULOS: Record<string, Carregador> = {
   'biologia/celular': () => import('./biologia/celular'),
   'historia/linha-do-tempo': () => import('./historia/linha-do-tempo'),
   'geografia/placas': () => import('./geografia/placas'),
+  'geografia/climogramas': () => import('./geografia/climogramas'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
