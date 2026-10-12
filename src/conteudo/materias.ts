@@ -97,7 +97,7 @@ export const MATERIAS: MateriaInfo[] = [
     temas: [
       t('placas', 'Placas tectônicas', 'Aproxime, afaste e deslize placas e veja o que se forma.', true, 12),
       t('climogramas', 'Climogramas', 'Leia, compare e monte climogramas de dez cidades.', true, 15),
-      t('fenomenos', 'Fenômenos em ação', 'Massas de ar, El Niño, ilhas de calor.'),
+      t('fenomenos', 'Fenômenos em ação', 'Chuva de relevo, massas de ar, El Niño, ilha de calor e inversão térmica.', true, 15),
       t('populacao', 'Pirâmide etária', 'Transição demográfica.'),
       t('fusos', 'Fusos horários', 'Calcule a hora em outro lugar.'),
       t('mapa-desafio', 'Mapa-desafio', 'Clique no país certo.'),

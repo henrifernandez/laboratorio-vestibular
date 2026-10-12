@@ -60,6 +60,7 @@
   --geo-verde: #4d7c3a;
   --geo-quente: #c2371d;
   --geo-frio: #1f5fc4;
+  --geo-brasil: #cfe3c4;
 
   /* espaçamento, raios, sombras */
   --space-1: 0.25rem;
@@ -132,6 +133,7 @@
     --geo-verde: #7fb069;
     --geo-quente: #ff8a70;
     --geo-frio: #8ab4ff;
+    --geo-brasil: #34502c;
     --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
   }
@@ -181,6 +183,7 @@
   --geo-verde: #7fb069;
   --geo-quente: #ff8a70;
   --geo-frio: #8ab4ff;
+  --geo-brasil: #34502c;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
 }
