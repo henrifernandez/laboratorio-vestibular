@@ -113,7 +113,7 @@ export const MATERIAS: MateriaInfo[] = [
     id: 'sociologia',
     nome: 'Sociologia',
     descricao: 'Três lentes para a mesma situação social.',
-    temas: [t('tres-lentes', 'Três lentes', 'Durkheim, Weber e Marx.')],
+    temas: [t('tres-lentes', 'Três lentes', 'Durkheim, Weber e Marx, mais Adorno e Horkheimer, Bourdieu e Bauman, aplicados a casos do dia a dia.', true, 15)],
   },
 ]
 
