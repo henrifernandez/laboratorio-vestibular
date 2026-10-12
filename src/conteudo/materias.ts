@@ -66,7 +66,7 @@ export const MATERIAS: MateriaInfo[] = [
     descricao: 'Estequiometria, soluções, orgânica, equilíbrio e cinética.',
     temas: [
       t('estequiometria', 'Estequiometria', 'Balanceamento e reagente limitante.', true, 12),
-      t('solucoes', 'Soluções e concentração', 'Béquer e curva de solubilidade.'),
+      t('solucoes', 'Soluções e concentração', 'Béquer e curva de solubilidade.', true, 12),
       t('organica', 'Química orgânica', 'Grupos funcionais, isômeros e nomes.'),
       t('equilibrio-ph', 'Equilíbrio, ácidos, bases e pH', 'Le Chatelier e escala de pH.'),
       t('cinetica', 'Cinética química', 'Colisões, energia de ativação e catalisador.'),
