@@ -1,6 +1,7 @@
 import { useId, useMemo, type KeyboardEvent, type ReactNode } from 'react'
 import type { InstanciaMulti, InstanciaNum, VisualProps } from '@/desafios/simples'
 import { TIPOS_ABO, aglutinogenios, aglutininas, cruzar, fenotipoGene, gametas, normalizar, podeReceber, rotuloSangue, valor, type Dominancia, type Fracao, type TipoSangue } from './calculo'
+import { BarrasClasses, type ItemBarra } from '../comum/Barras'
 import type { DadosHeredograma, DadosProbabilidade } from './geradoresHeredograma'
 import { reconstruir } from './geradoresHeredograma'
 import type { DadosLigacao } from './geradores'
@@ -198,40 +199,6 @@ export function QuadroPunnett({ pai, mae, modo = 'completa', destaque }: PropsPu
         ))}
       </ul>
     </div>
-  )
-}
-
-/* ------------------------------------------------------------------ barras de proporção */
-
-export interface ItemBarra {
-  rotulo: string
-  valor: number
-  /** valor esperado para comparar (barra fina por baixo) */
-  esperado?: number
-  cor?: string
-}
-
-/** Barras horizontais em porcentagem (0–100), com valor esperado opcional. */
-export function BarrasClasses({ titulo, itens, max = 100 }: { titulo: string; itens: ItemBarra[]; max?: number }) {
-  const resumo = itens.map((i) => `${i.rotulo}: ${f(i.valor)} %${i.esperado !== undefined ? ` (esperado ${f(i.esperado)} %)` : ''}`).join('; ')
-  return (
-    <figure className="m-0 grid gap-1" role="img" aria-label={`${titulo}. ${resumo}`}>
-      <figcaption className="text-sm font-semibold text-[var(--ink-muted)]">{titulo}</figcaption>
-      <div className="grid gap-2">
-        {itens.map((i) => (
-          <div key={i.rotulo} className="grid grid-cols-[6.5rem_1fr] items-center gap-2">
-            <span className="text-right text-sm font-semibold leading-tight">{i.rotulo}</span>
-            <div className="relative h-7 rounded bg-[var(--surface-2)]">
-              <div className="absolute inset-y-0 left-0 rounded" style={{ width: `${Math.min(100, (i.valor / max) * 100)}%`, background: i.cor ?? 'var(--accent)', transition: 'width var(--dur-media)' }} />
-              {i.esperado !== undefined && <div aria-hidden="true" className="absolute inset-y-0 w-0.5 bg-[var(--ink)]" style={{ left: `${Math.min(100, (i.esperado / max) * 100)}%` }} />}
-              <span className="num absolute inset-y-0 right-2 flex items-center text-sm font-semibold" style={{ textShadow: '0 0 4px var(--surface)' }}>
-                {f(i.valor, 2)} %
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </figure>
   )
 }
 
@@ -442,3 +409,5 @@ export function QuadroX({ pai, mae }: { pai: 'XAY' | 'XaY'; mae: 'XAXA' | 'XAXa'
     </div>
   )
 }
+
+export { BarrasClasses, type ItemBarra }
