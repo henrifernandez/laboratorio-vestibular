@@ -41,6 +41,7 @@ export const MODULOS: Record<string, Carregador> = {
   'geografia/fenomenos': () => import('./geografia/fenomenos'),
   'geografia/populacao': () => import('./geografia/populacao'),
   'geografia/fusos': () => import('./geografia/fusos'),
+  'geografia/mapa-desafio': () => import('./geografia/mapa-desafio'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
