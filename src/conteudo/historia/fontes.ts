@@ -1,0 +1,31 @@
+/**
+ * Obras de referência usadas para conferir datas, causas e consequências.
+ * São referências gerais (livros-texto e obras acadêmicas, além de leis e documentos), citadas sem número de página.
+ */
+export const F = {
+  fausto: 'FAUSTO, Boris. História do Brasil. São Paulo: Edusp.',
+  schwarcz: 'SCHWARCZ, Lilia M.; STARLING, Heloisa M. Brasil: uma biografia. São Paulo: Companhia das Letras, 2015.',
+  carvalho: 'CARVALHO, José Murilo de. Cidadania no Brasil: o longo caminho. Rio de Janeiro: Civilização Brasileira.',
+  alencastro: 'ALENCASTRO, Luiz Felipe de. O trato dos viventes: formação do Brasil no Atlântico Sul. São Paulo: Companhia das Letras, 2000.',
+  furtado: 'FURTADO, Celso. Formação econômica do Brasil.',
+  skidmore: 'SKIDMORE, Thomas. Brasil: de Getúlio a Castelo; De Castelo a Tancredo. Rio de Janeiro: Paz e Terra.',
+  fico: 'FICO, Carlos. Além do golpe: versões e controvérsias sobre 1964 e a ditadura militar. Rio de Janeiro: Record, 2004.',
+  hobsbawmRev: 'HOBSBAWM, Eric. A era das revoluções: Europa 1789–1848. São Paulo: Paz e Terra.',
+  hobsbawmCap: 'HOBSBAWM, Eric. A era do capital: 1848–1875. São Paulo: Paz e Terra.',
+  hobsbawmImp: 'HOBSBAWM, Eric. A era dos impérios: 1875–1914. São Paulo: Paz e Terra.',
+  hobsbawmExt: 'HOBSBAWM, Eric. Era dos extremos: o breve século XX (1914–1991). São Paulo: Companhia das Letras.',
+  judt: 'JUDT, Tony. Pós-guerra: uma história da Europa desde 1945. Rio de Janeiro: Objetiva.',
+  williams: 'WILLIAMS, Eric. Capitalismo e escravidão.',
+  slaveVoyages: 'Slave Voyages: The Trans-Atlantic Slave Trade Database (slavevoyages.org), dados abertos.',
+  caminha: 'Carta de Pero Vaz de Caminha ao rei dom Manuel (1500).',
+  constituicao: 'Constituição da República Federativa do Brasil, de 5 de outubro de 1988.',
+  leiAurea: 'Lei nº 3.353, de 13 de maio de 1888 (Lei Áurea).',
+  leiEusebio: 'Lei nº 581, de 4 de setembro de 1850 (Lei Eusébio de Queirós) e Lei nº 601, de 18 de setembro de 1850 (Lei de Terras).',
+  leiVentreLivre: 'Lei nº 2.040, de 28 de setembro de 1871 (Lei do Ventre Livre).',
+  leiAnistia: 'Lei nº 6.683, de 28 de agosto de 1979 (Lei da Anistia).',
+  leiPetrobras: 'Lei nº 2.004, de 3 de outubro de 1953 (cria a Petrobras).',
+  clt: 'Decreto-Lei nº 5.452, de 1º de maio de 1943 (Consolidação das Leis do Trabalho).',
+  ai5: 'Ato Institucional nº 5, de 13 de dezembro de 1968.',
+  bolsaFamilia: 'Medida Provisória nº 132, de 2003, e Lei nº 10.836, de 2004 (Bolsa Família).',
+  cartaOnu: 'Carta das Nações Unidas, 1945.',
+} as const

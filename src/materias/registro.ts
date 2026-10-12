@@ -35,6 +35,7 @@ export const MODULOS: Record<string, Carregador> = {
   'biologia/genetica': () => import('./biologia/genetica'),
   'biologia/molecular': () => import('./biologia/molecular'),
   'biologia/celular': () => import('./biologia/celular'),
+  'historia/linha-do-tempo': () => import('./historia/linha-do-tempo'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {

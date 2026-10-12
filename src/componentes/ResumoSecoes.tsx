@@ -45,6 +45,12 @@ export function ResumoSecoes({ secoes }: { secoes: SecaoResumo[] }) {
                 ))}
               </ul>
             </div>
+            {s.fontes && s.fontes.length > 0 && (
+              <p className="m-0 text-xs text-[var(--ink-muted)]">
+                <span className="font-semibold">Fontes: </span>
+                {s.fontes.join(' · ')}
+              </p>
+            )}
           </section>
         ))}
       </div>

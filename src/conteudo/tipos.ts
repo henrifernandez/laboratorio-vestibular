@@ -14,6 +14,8 @@ export interface SecaoResumo {
   formulas: { rotulo: string; tex: string }[]
   ideias: string[]
   pegadinhas: string[]
+  /** obras de referência, mostradas discretamente no fim do card (obrigatório em humanas) */
+  fontes?: string[]
 }
 
 /** Fontes de dados ou de informações históricas (obrigatório em humanas). */
