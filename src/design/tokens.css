@@ -49,6 +49,18 @@
   --quim-c: #6d28d9;
   --quim-no2: #8a4b14;
 
+  /* cores de diagramas da Geografia */
+  --geo-oceano: #3b5b7a;
+  --geo-continente: #9a6b3a;
+  --geo-nova: #2f8f83;
+  --geo-manto: #d9863b;
+  --geo-magma: #c2371d;
+  --geo-agua: #8fc4e0;
+  --geo-ar: #eef4f8;
+  --geo-verde: #4d7c3a;
+  --geo-quente: #c2371d;
+  --geo-frio: #1f5fc4;
+
   /* espaçamento, raios, sombras */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -110,6 +122,16 @@
     --quim-b: #fb923c;
     --quim-c: #a78bfa;
     --quim-no2: #d98b4a;
+    --geo-oceano: #7d9cbb;
+    --geo-continente: #c99a64;
+    --geo-nova: #5fc9b8;
+    --geo-manto: #b5651d;
+    --geo-magma: #ff7a5c;
+    --geo-agua: #285a78;
+    --geo-ar: #1b2530;
+    --geo-verde: #7fb069;
+    --geo-quente: #ff8a70;
+    --geo-frio: #8ab4ff;
     --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
   }
@@ -149,6 +171,16 @@
   --quim-b: #fb923c;
   --quim-c: #a78bfa;
   --quim-no2: #d98b4a;
+  --geo-oceano: #7d9cbb;
+  --geo-continente: #c99a64;
+  --geo-nova: #5fc9b8;
+  --geo-manto: #b5651d;
+  --geo-magma: #ff7a5c;
+  --geo-agua: #285a78;
+  --geo-ar: #1b2530;
+  --geo-verde: #7fb069;
+  --geo-quente: #ff8a70;
+  --geo-frio: #8ab4ff;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
 }
