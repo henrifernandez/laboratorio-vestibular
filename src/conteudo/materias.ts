@@ -107,7 +107,7 @@ export const MATERIAS: MateriaInfo[] = [
     id: 'filosofia',
     nome: 'Filosofia',
     descricao: 'Mapa dos pensadores, debates e conceitos.',
-    temas: [t('pensadores', 'Mapa dos pensadores', 'Linha do tempo com influências.')],
+    temas: [t('pensadores', 'Mapa dos pensadores', 'Quatorze pensadores em linha do tempo, com influências, conceitos e grandes debates.', true, 18)],
   },
   {
     id: 'sociologia',

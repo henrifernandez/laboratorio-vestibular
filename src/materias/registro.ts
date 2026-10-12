@@ -43,6 +43,7 @@ export const MODULOS: Record<string, Carregador> = {
   'geografia/fusos': () => import('./geografia/fusos'),
   'geografia/mapa-desafio': () => import('./geografia/mapa-desafio'),
   'sociologia/tres-lentes': () => import('./sociologia/tres-lentes'),
+  'filosofia/pensadores': () => import('./filosofia/pensadores'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
