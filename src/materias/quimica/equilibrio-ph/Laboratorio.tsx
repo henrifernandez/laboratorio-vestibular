@@ -137,7 +137,7 @@ function TelaChatelier() {
           </p>
           <div className="flex flex-wrap items-end justify-center gap-6">
             <figure className="m-0 grid justify-items-center gap-0.5 text-center text-sm">
-              <Bequer volume={e.V * 1000} vmax={2200} intensidade={Math.min(1, atualO / 0.15)} cor="#9a4d12" descricao={`Recipiente com gás: [NO₂] = ${fmt(atualO, 3)} mol/L. O NO₂ é marrom e o N₂O₄ é incolor.`} largura={100} />
+              <Bequer volume={e.V * 1000} vmax={2200} intensidade={Math.min(1, atualO / 0.15)} cor="var(--quim-no2)" descricao={`Recipiente com gás: [NO₂] = ${fmt(atualO, 3)} mol/L. O NO₂ é marrom e o N₂O₄ é incolor.`} largura={100} />
               <figcaption>
                 <strong>O gás agora</strong>
                 <span className="block text-[var(--ink-muted)]">quanto mais marrom, mais NO₂</span>
@@ -156,12 +156,12 @@ function TelaChatelier() {
             <line x1={36} x2={36} y1={14} y2={124} stroke="var(--ink-muted)" strokeWidth={1.5} />
             <line x1={36} x2={326} y1={124} y2={124} stroke="var(--ink-muted)" strokeWidth={1.5} />
             <polyline points={curva(aposN, eq1.n2o4)} fill="none" stroke="var(--accent)" strokeWidth={3} />
-            <polyline points={curva(aposO, eq1.no2)} fill="none" stroke="#9a4d12" strokeWidth={3} />
+            <polyline points={curva(aposO, eq1.no2)} fill="none" stroke="var(--quim-no2)" strokeWidth={3} />
             <line x1={X(T)} x2={X(T)} y1={14} y2={124} stroke="var(--ink-muted)" strokeDasharray="3 3" strokeWidth={1.2} />
             <circle cx={X(T)} cy={Y(atualN)} r={5} fill="var(--accent)" stroke="var(--surface)" strokeWidth={2} />
-            <circle cx={X(T)} cy={Y(atualO)} r={5} fill="#9a4d12" stroke="var(--surface)" strokeWidth={2} />
+            <circle cx={X(T)} cy={Y(atualO)} r={5} fill="var(--quim-no2)" stroke="var(--surface)" strokeWidth={2} />
             <text x={330} y={Y(eq1.n2o4) - 5} textAnchor="end" fontSize={11} fontWeight={700} fill="var(--accent)">N₂O₄</text>
-            <text x={330} y={Y(eq1.no2) + 15} textAnchor="end" fontSize={11} fontWeight={700} fill="#9a4d12">NO₂</text>
+            <text x={330} y={Y(eq1.no2) + 15} textAnchor="end" fontSize={11} fontWeight={700} fill="var(--quim-no2)">NO₂</text>
             <text x={326} y={142} textAnchor="end" fontSize={11} fill="var(--ink-muted)">tempo depois da perturbação</text>
             <text x={4} y={10} fontSize={11} fill="var(--ink-muted)">mol/L</text>
           </svg>
@@ -172,7 +172,7 @@ function TelaChatelier() {
               { rotulo: 'N₂O₄ (antes)', nome: 'N₂O₄ no equilíbrio inicial', valor: eq0.n2o4, texto: fmt(eq0.n2o4, 3), cor: 'var(--line-strong)' },
               { rotulo: 'N₂O₄ (agora)', nome: 'N₂O₄ agora', valor: atualN, texto: fmt(atualN, 3) },
               { rotulo: 'NO₂ (antes)', nome: 'NO₂ no equilíbrio inicial', valor: eq0.no2, texto: fmt(eq0.no2, 3), cor: 'var(--line-strong)' },
-              { rotulo: 'NO₂ (agora)', nome: 'NO₂ agora', valor: atualO, texto: fmt(atualO, 3), cor: '#9a4d12' },
+              { rotulo: 'NO₂ (agora)', nome: 'NO₂ agora', valor: atualO, texto: fmt(atualO, 3), cor: 'var(--quim-no2)' },
             ]}
           />
           <p className="m-0 text-sm text-[var(--ink-muted)]">Modelo didático (Kc ≈ 0,006 a 298 K, ΔH = +57 kJ/mol): o formato da curva é uma ilustração; a velocidade real depende das velocidades das reações.</p>

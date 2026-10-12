@@ -15,7 +15,7 @@ interface Props {
   destaque?: Record<number, string>
 }
 
-const COR_TEXTO: Record<string, string> = { O: '#e0473d', N: '#4f86e8', Cl: '#2fa850', Br: '#b04a4a', F: '#4caf50', C: 'var(--ink)' }
+const COR_TEXTO: Record<string, string> = { O: 'var(--el-o)', N: 'var(--el-n)', Cl: 'var(--el-cl)', Br: 'var(--el-br)', F: 'var(--el-cl)', C: 'var(--ink)' }
 
 function indice(n: number): string {
   return String(n)

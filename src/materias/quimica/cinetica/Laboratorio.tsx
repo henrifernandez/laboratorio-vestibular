@@ -42,13 +42,13 @@ function Simulacao({ p, semente }: { p: Parametros; semente: number }) {
       <div className="cartao grid gap-2 p-3">
         <svg viewBox={`0 0 ${LADO} ${LADO}`} role="img" aria-label={`Caixa com ${nA} partículas A, ${nB} partículas B e ${nC} partículas C (produto)`} className="mx-auto block w-full max-w-sm rounded-[var(--radius-sm)] border border-[var(--line-strong)] bg-[var(--surface-2)]">
           {sim.particulas.map((q, i) => (
-            <circle key={i} cx={q.x} cy={q.y} r={RAIO} fill={q.tipo === 'A' ? 'var(--accent)' : q.tipo === 'B' ? '#e08a1e' : '#8a5cc7'} stroke="var(--ink)" strokeWidth={0.5} />
+            <circle key={i} cx={q.x} cy={q.y} r={RAIO} fill={q.tipo === 'A' ? 'var(--accent)' : q.tipo === 'B' ? 'var(--quim-b)' : 'var(--quim-c)'} stroke="var(--ink)" strokeWidth={0.5} />
           ))}
         </svg>
         <ul className="m-0 flex list-none flex-wrap justify-center gap-x-4 gap-y-1 p-0 text-sm">
           <li><span aria-hidden="true" style={{ color: 'var(--accent)' }}>●</span> A: {nA}</li>
-          <li><span aria-hidden="true" style={{ color: '#e08a1e' }}>●</span> B: {nB}</li>
-          <li><span aria-hidden="true" style={{ color: '#8a5cc7' }}>●</span> C (produto): {nC}</li>
+          <li><span aria-hidden="true" style={{ color: 'var(--quim-b)' }}>●</span> B: {nB}</li>
+          <li><span aria-hidden="true" style={{ color: 'var(--quim-c)' }}>●</span> C (produto): {nC}</li>
           <li className="num text-[var(--ink-muted)]">t = {fmt(sim.t, 1)} s</li>
         </ul>
         <ControlesDeTempo rodando={rodando} onAlternar={() => setRodando(!rodando)} onPasso={passoUnico} velocidade={velocidade} onVelocidade={setVelocidade} />
@@ -58,11 +58,11 @@ function Simulacao({ p, semente }: { p: Parametros; semente: number }) {
           <line x1={36} x2={36} y1={14} y2={120} stroke="var(--ink-muted)" strokeWidth={1.5} />
           <line x1={36} x2={322} y1={120} y2={120} stroke="var(--ink-muted)" strokeWidth={1.5} />
           <polyline points={linha(1)} fill="none" stroke="var(--accent)" strokeWidth={2.6} />
-          <polyline points={linha(3)} fill="none" stroke="#8a5cc7" strokeWidth={2.6} />
+          <polyline points={linha(3)} fill="none" stroke="var(--quim-c)" strokeWidth={2.6} />
           <text x={322} y={142} textAnchor="end" fontSize={11} fill="var(--ink-muted)">tempo (s)</text>
           <text x={4} y={10} fontSize={11} fill="var(--ink-muted)">partículas</text>
           <text x={X(0) + 4} y={Y(p.nA) - 4} fontSize={11} fontWeight={700} fill="var(--accent)">A</text>
-          <text x={322} y={Y(Math.max(1, nC)) - 4} textAnchor="end" fontSize={11} fontWeight={700} fill="#8a5cc7">C</text>
+          <text x={322} y={Y(Math.max(1, nC)) - 4} textAnchor="end" fontSize={11} fontWeight={700} fill="var(--quim-c)">C</text>
         </svg>
         <p className="num m-0 text-sm" aria-live="polite">
           Colisões A–B: {sim.colisoes} · efetivas: {sim.efetivas} ({fmt(observada * 100, 0)} %). Pela teoria, a fração com E ≥ Ea é e<sup>−Ea/RT</sup> = <strong>{fmt(esperada * 100, 1)} %</strong>.
