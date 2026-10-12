@@ -11,5 +11,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // alguns testes de geradores percorrem centenas de sementes e passam de 5 s com a máquina carregada
+    testTimeout: 20_000,
   },
 })

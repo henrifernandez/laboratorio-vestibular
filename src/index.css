@@ -75,6 +75,12 @@ p { margin: 0; text-wrap: pretty; }
   border-radius: 4px;
 }
 
+/* Espécies clicáveis do desenho da teia: o foco aparece como um contorno em volta da caixa. */
+.no-teia { cursor: pointer; }
+.no-teia .foco { opacity: 0; pointer-events: none; }
+.no-teia:focus-visible { outline: none; }
+.no-teia:focus-visible .foco { opacity: 1; }
+
 .num { font-variant-numeric: tabular-nums; }
 
 /* ---------- componentes base ---------- */
