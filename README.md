@@ -38,8 +38,18 @@ Cada tema tem quatro abas: **Entenda**, **Laboratório**, **Desafios** e **Resum
 
 ## Status
 
-- Fase 1: base, design system, kit de simulação, motor de desafios e o tema **Matemática / Funções** completo.
-- Próximas fases: História, Geografia e Sociologia, Filosofia e o restante de Matemática, Física e Química, Biologia.
+Publicados (cada tema com Entenda, Laboratório, Desafios e Resumo):
+
+- **Matemática:** funções, porcentagem e juros, PA e PG, estatística, combinatória, trigonometria, geometria analítica e geometria.
+- **Física:** cinemática, dinâmica, termologia e eletricidade.
+- **Química:** estequiometria, soluções, orgânica, equilíbrio e pH, cinética e química verde.
+- **Biologia:** ecologia, genética, molecular e celular.
+- **História:** linha do tempo.
+- **Geografia:** placas tectônicas, climogramas, fenômenos em ação, pirâmide etária, fusos horários e mapa-desafio.
+- **Sociologia:** três lentes (Durkheim, Weber, Marx e outros).
+- **Filosofia:** mapa dos pensadores.
+
+Próxima fase: revisão mista, painel de progresso e auditorias finais (acessibilidade, desempenho e contraste).
 
 ## Deploy
 
