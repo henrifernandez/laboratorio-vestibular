@@ -32,6 +32,7 @@ export const MODULOS: Record<string, Carregador> = {
   'quimica/cinetica': () => import('./quimica/cinetica'),
   'quimica/quimica-verde': () => import('./quimica/quimica-verde'),
   'biologia/ecologia': () => import('./biologia/ecologia'),
+  'biologia/genetica': () => import('./biologia/genetica'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {

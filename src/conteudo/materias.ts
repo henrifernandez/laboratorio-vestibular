@@ -78,8 +78,8 @@ export const MATERIAS: MateriaInfo[] = [
     nome: 'Biologia',
     descricao: 'Ecologia, genética, biologia molecular e celular.',
     temas: [
-      t('ecologia', 'Ecologia', 'Teias alimentares, pirâmides e ciclos.', true, 12),
-      t('genetica', 'Genética', 'Cruzamentos, heredogramas e grupos sanguíneos.'),
+      t('ecologia', 'Ecologia', 'Teias alimentares, pirâmides e ciclos.', true, 15),
+      t('genetica', 'Genética', 'Cruzamentos, heredogramas e grupos sanguíneos.', true, 18),
       t('molecular', 'Biologia molecular e biotecnologia', 'Do DNA à proteína, mutações e PCR.'),
       t('celular', 'Biologia celular', 'Organelas, membrana, divisão e metabolismo.'),
     ],

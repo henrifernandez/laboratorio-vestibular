@@ -1,9 +1,8 @@
-import { useId, useMemo, type ReactNode } from 'react'
+import { useMemo } from 'react'
 import { Line, Plot, Point, Polyline } from 'mafs'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
-import { BotaoLink } from '@/sim/BotaoLink'
-import { BotaoReiniciar } from '@/sim/BotaoReiniciar'
 import { Cena } from '@/sim/Cena'
+import { Alternador, Cartao, Rodape, Seletor, bonito } from '@/sim/ComunsLab'
 import { ControleDeslizante } from '@/sim/ControleDeslizante'
 import { ControlesDeTempo } from '@/sim/ControlesDeTempo'
 import { LaboratorioTelas } from '@/sim/LaboratorioTelas'
@@ -36,74 +35,7 @@ import { DEFINICOES_ECOLOGIA } from './definicoes'
 import { PiramideBarras, TeiaSvg, legendaMarcas, type Marca } from './Visuais'
 
 const fmt = (n: number, c = 2) => n.toLocaleString('pt-BR', { maximumFractionDigits: c })
-/** Passo de grade "redondo" (1, 2, 5 × potência de 10) perto de v. */
-const bonito = (v: number) => {
-  const pot = 10 ** Math.floor(Math.log10(Math.max(v, 1e-9)))
-  const m = v / pot
-  return (m <= 1.5 ? 1 : m <= 3.5 ? 2 : m <= 7.5 ? 5 : 10) * pot
-}
 const lista = (itens: string[]) => (itens.length <= 1 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`)
-
-/* ------------------------------------------------------------------ peças comuns */
-
-interface OpcaoAlternador {
-  id: string
-  rotulo: string
-}
-
-/** Escolha entre poucas opções, como botões: setas do teclado trocam a opção. */
-function Alternador({ rotulo, valor, opcoes, onChange }: { rotulo: string; valor: string; opcoes: OpcaoAlternador[]; onChange: (id: string) => void }) {
-  const nome = useId()
-  return (
-    <fieldset className="m-0 min-w-0 border-0 p-0">
-      <legend className="mb-1 text-sm font-semibold text-[var(--ink-muted)]">{rotulo}</legend>
-      <div className="flex flex-wrap gap-2">
-        {opcoes.map((o) => (
-          <label
-            key={o.id}
-            className={`btn cursor-pointer has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus)] ${o.id === valor ? 'btn-primario' : ''}`}
-          >
-            <input type="radio" name={nome} value={o.id} checked={o.id === valor} onChange={() => onChange(o.id)} className="sr-only" />
-            {o.rotulo}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  )
-}
-
-function Seletor({ rotulo, valor, opcoes, onChange }: { rotulo: string; valor: string; opcoes: OpcaoAlternador[]; onChange: (id: string) => void }) {
-  const id = useId()
-  return (
-    <div className="grid gap-1">
-      <label htmlFor={id} className="font-semibold">
-        {rotulo}
-      </label>
-      <select id={id} value={valor} onChange={(ev) => onChange(ev.target.value)} className="min-h-11 rounded-lg border border-[var(--line-strong)] bg-[var(--surface)] px-3">
-        {opcoes.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.rotulo}
-          </option>
-        ))}
-      </select>
-    </div>
-  )
-}
-
-function Rodape({ onReiniciar }: { onReiniciar: () => void }) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <BotaoReiniciar onClick={onReiniciar} />
-      <BotaoLink />
-    </div>
-  )
-}
-
-const Cartao = ({ children, vivo = false }: { children: ReactNode; vivo?: boolean }) => (
-  <div className="cartao num grid gap-1 p-3" aria-live={vivo ? 'polite' : undefined}>
-    {children}
-  </div>
-)
 
 /* ------------------------------------------------------------------ Introdução: retirar espécies da teia */
 

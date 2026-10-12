@@ -1,6 +1,7 @@
-import type { ErroTipico, InstanciaMulti, InstanciaNum } from '@/desafios/simples'
+import type { InstanciaMulti, InstanciaNum } from '@/desafios/simples'
 import type { Nivel } from '@/desafios/tipos'
 import { embaralhar, escolher, sortear, type Rng } from '@/lib/rng'
+import { fn, limpar, lista, maiuscula, montar, type ItemBanco, type Opc } from '../comum/auxiliares'
 import {
   TEIAS,
   alimentos,
@@ -17,51 +18,6 @@ import {
   taxaLogistica,
   type Teia,
 } from './calculo'
-
-const fn = (n: number, c = 2) => n.toLocaleString('pt-BR', { maximumFractionDigits: c })
-const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-const lista = (itens: string[]) => (itens.length <= 1 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`)
-
-function limpar(erros: ErroTipico[], resposta: number, tol: number): ErroTipico[] {
-  const saida: ErroTipico[] = []
-  for (const e of erros) {
-    if (!Number.isFinite(e.valor) || e.valor <= 0) continue
-    if (Math.abs(e.valor - resposta) <= 2 * tol) continue
-    if (saida.some((x) => Math.abs(x.valor - e.valor) <= tol)) continue
-    saida.push(e)
-  }
-  return saida
-}
-
-/* ------------------------------------------------------------------ montagem de múltipla escolha */
-
-interface Opc {
-  texto: string
-  /** feedback quando a pessoa marca esta opção (certa ou errada) */
-  porque: string
-  motivo?: string
-}
-
-type RestoMulti<D> = Omit<InstanciaMulti<D>, 'opcoes' | 'certa' | 'porque' | 'motivo'>
-
-function montar<D>(rng: Rng, certa: Opc, erradas: Opc[], resto: RestoMulti<D>): InstanciaMulti<D> {
-  const ids = ['A', 'B', 'C', 'D', 'E']
-  const ordem = embaralhar(rng, [{ ok: true, ...certa }, ...erradas.map((e) => ({ ok: false, ...e }))])
-  const porque: Record<string, string> = {}
-  const motivo: Record<string, string> = {}
-  let id_certa = 'A'
-  ordem.forEach((o, k) => {
-    const id = ids[k] as string
-    if (o.ok) {
-      id_certa = id
-      porque[id] = `Certo. ${o.porque}`
-    } else {
-      porque[id] = `Não. ${o.porque}`
-      motivo[id] = o.motivo ?? 'opção errada'
-    }
-  })
-  return { ...resto, opcoes: ordem.map((o, k) => ({ id: ids[k] as string, rotulo: o.texto })), certa: id_certa, porque, motivo }
-}
 
 /* ================================================================== energia e acúmulo */
 
@@ -1022,19 +978,13 @@ export const EXEMPLOS: ExemploRelacao[] = [
 ]
 
 /** Descrição de cada relação em termos de efeitos, para a pergunta sobre experimentos. */
+export type { ItemBanco }
+
 export const EFEITOS: { relacao: string; texto: string }[] = [
   { relacao: 'comensalismo', texto: 'A espécie A cresce mais quando a espécie B está presente, e a população de B não muda.' },
   { relacao: 'amensalismo', texto: 'A população da espécie A diminui quando a espécie B está presente, e a população de B não muda.' },
   { relacao: 'competicao', texto: 'As populações de A e de B crescem menos quando as duas ocupam o mesmo ambiente do que quando estão separadas, e elas disputam o mesmo alimento.' },
 ]
-
-export interface ItemBanco {
-  pergunta: string
-  certa: { texto: string; porque: string }
-  erradas: Opc[]
-  licao: string
-  dicas: string[]
-}
 
 /** Sucessão ecológica e comunidades. */
 export const SUCESSAO: { nivel: Nivel; item: ItemBanco }[] = [
