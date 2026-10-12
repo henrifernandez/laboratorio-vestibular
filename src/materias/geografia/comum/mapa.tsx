@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { geoEquirectangular, geoPath } from 'd3-geo'
-import type { Feature, FeatureCollection, Geometry, Polygon } from 'geojson'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { feature } from 'topojson-client'
 import type { GeometryCollection, Topology } from 'topojson-specification'
 
@@ -42,23 +42,6 @@ export function usePaises() {
 export type Extensao = [[number, number], [number, number]] // [[lonMin, latMin], [lonMax, latMax]]
 export type Projetar = (lonLat: [number, number]) => [number, number] | null
 
-const caixa = ([[x0, y0], [x1, y1]]: Extensao): Feature<Polygon> => ({
-  type: 'Feature',
-  properties: {},
-  geometry: {
-    type: 'Polygon',
-    coordinates: [
-      [
-        [x0, y0],
-        [x1, y0],
-        [x1, y1],
-        [x0, y1],
-        [x0, y0],
-      ],
-    ],
-  },
-})
-
 export interface Quadro {
   largura: number
   altura: number
@@ -67,17 +50,18 @@ export interface Quadro {
   caminhos: { pais: PaisGeo; d: string }[]
 }
 
-/** Projeção equirretangular ajustada a uma região; a altura sai da proporção da região. */
+/**
+ * Projeção equirretangular ajustada a uma região: a escala vem da largura em graus e o centro, do meio da região, então os cantos
+ * da extensão caem exatamente nos cantos do desenho. (Ajustar por um polígono esférico não serve: o d3 liga os vértices por arcos
+ * de círculo máximo, que se curvam, e o sentido dos vértices decide se a região é "dentro" ou "fora".)
+ */
 export function montarQuadro(paises: PaisGeo[], extensao: Extensao, largura = 640): Quadro {
   const [[lon0, lat0], [lon1, lat1]] = extensao
   const altura = Math.round((largura * (lat1 - lat0)) / (lon1 - lon0))
-  const proj = geoEquirectangular().fitExtent(
-    [
-      [0, 0],
-      [largura, altura],
-    ],
-    caixa(extensao),
-  )
+  const proj = geoEquirectangular()
+    .scale(largura / (((lon1 - lon0) * Math.PI) / 180))
+    .center([(lon0 + lon1) / 2, (lat0 + lat1) / 2])
+    .translate([largura / 2, altura / 2])
   const path = geoPath(proj)
   const projetar: Projetar = (p) => proj(p) as [number, number] | null
   const caminhos = paises
