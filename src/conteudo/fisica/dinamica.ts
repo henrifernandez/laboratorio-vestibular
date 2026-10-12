@@ -6,6 +6,9 @@ export type VisualDin =
   | { tipo: 'dcl'; cenario: CenarioId }
   | { tipo: 'plano'; angulo: number; m: number; mu: number; componentes: boolean }
   | { tipo: 'polias'; m1: number; m2: number }
+  | { tipo: 'onibus' }
+  | { tipo: 'patinadores'; mA: number; mB: number; F: number; dt: number }
+  | { tipo: 'pares' }
 
 export interface PassoDin {
   titulo: string
@@ -15,6 +18,20 @@ export interface PassoDin {
 }
 
 export const PASSOS_DIN: PassoDin[] = [
+  {
+    titulo: 'Sem resultante, a velocidade não muda',
+    texto: [
+      'A 1ª lei de Newton, ou princípio da inércia, diz que um corpo mantém a sua velocidade (parado, ou em linha reta com velocidade constante) enquanto a força resultante sobre ele for zero. Não é preciso força para continuar em movimento; é preciso força para mudar o movimento.',
+      'No ônibus que freia, nada empurra a bola nem o passageiro para a frente. Eles só continuam com a velocidade que tinham, enquanto o ônibus perde a sua. Quem olha da calçada vê a bola seguir reto, com passos iguais; quem está dentro tem a impressão de que ela foi “jogada” para a frente.',
+    ],
+    pare: {
+      pergunta: 'Uma sonda no espaço, longe de qualquer planeta, desliga os motores quando está a 10 km/s. O que acontece com a velocidade dela?',
+      opcoes: ['Continua 10 km/s, em linha reta', 'Vai diminuindo até a sonda parar', 'Aumenta, porque não há atrito'],
+      certa: 0,
+      explicacao: 'Sem força resultante, a velocidade não muda (1ª lei). Ela só pararia se alguma força a freasse; longe de tudo e sem atrito, nada a freia. E nada a acelera também.',
+    },
+    visual: { tipo: 'onibus' },
+  },
   {
     titulo: 'A resultante é quem acelera',
     texto: [
@@ -30,16 +47,44 @@ export const PASSOS_DIN: PassoDin[] = [
     visual: { tipo: 'mesa', F: 20, m: 4, mu: 0 },
   },
   {
+    titulo: 'Toda força tem um par: ação e reação',
+    texto: [
+      'Forças nascem de interações entre dois corpos. Se A empurra B, B empurra A ao mesmo tempo, com força de mesmo módulo e sentido oposto. É a 3ª lei de Newton, e ela não depende de quem “começou” nem de quem é mais pesado.',
+      'Os patinadores recebem forças iguais, mas o mais leve sai mais rápido: a mesma força dividida por uma massa menor dá uma aceleração maior (2ª lei). No fim, massa × velocidade é igual para os dois.',
+    ],
+    pare: {
+      pergunta: 'Uma patinadora de 50 kg empurra um patinador de 80 kg. Durante o empurrão, quem recebe a força de maior módulo?',
+      opcoes: ['Os dois recebem forças de mesmo módulo', 'A patinadora, por ser mais leve', 'O patinador, por ser mais pesado'],
+      certa: 0,
+      explicacao: 'Ação e reação têm sempre o mesmo módulo. O que muda é o efeito: a patinadora, mais leve, tem aceleração maior (a = F/m) e por isso sai mais rápido.',
+    },
+    visual: { tipo: 'patinadores', mA: 50, mB: 80, F: 200, dt: 0.5 },
+  },
+  {
+    titulo: 'Ação e reação não se anulam',
+    texto: [
+      'As duas forças de um par atuam em corpos diferentes, por isso nunca se cancelam. Só se somam (e podem se anular) forças que atuam no mesmo corpo.',
+      'O livro sobre a mesa tem duas interações: com a Terra (o peso P e a reação P′, o livro puxando a Terra) e com a mesa (a normal N e a reação N′, o livro empurrando a mesa). P e N se equilibram no livro, mas não são par: o par do peso está na Terra.',
+    ],
+    pare: {
+      pergunta: 'Um caminhão e um carro batem de frente. Sobre as forças que um faz no outro durante o choque, é correto dizer que…',
+      opcoes: ['têm o mesmo módulo, e o carro sofre mais porque tem menos massa', 'a do caminhão sobre o carro é maior, porque o caminhão é mais pesado', 'se anulam, porque são iguais e opostas'],
+      certa: 0,
+      explicacao: 'É um par de ação e reação: mesmo módulo, sentidos opostos. Elas não se anulam porque atuam em corpos diferentes (uma no carro, outra no caminhão). Com menos massa, o carro sofre uma aceleração muito maior.',
+    },
+    visual: { tipo: 'pares' },
+  },
+  {
     titulo: 'Desenhe só as forças que existem',
     texto: [
       'Para cada força, pergunte: quem a faz? A Terra puxa o bloco (peso, vertical para baixo). A mesa empurra o bloco (normal, perpendicular à mesa) e o raspa (atrito, paralelo à mesa). Um fio puxa (tração).',
       'Não existe “força do movimento” nem “força da velocidade”: se nada o está fazendo, não entra no diagrama. Peso e normal têm o mesmo valor aqui porque o bloco não acelera na vertical (isso vem da 1ª lei), e não porque formam um par de ação e reação.',
     ],
     pare: {
-      pergunta: 'Um livro está em repouso sobre uma mesa. A força normal que a mesa exerce nele é a reação ao peso do livro (3ª lei)?',
-      opcoes: ['Sim, são um par ação e reação', 'Não: a reação ao peso é a atração do livro sobre a Terra', 'Sim, mas só se a mesa for lisa'],
-      certa: 1,
-      explicacao: 'Ação e reação atuam em corpos diferentes. Peso (Terra→livro) e normal (mesa→livro) atuam no mesmo corpo. A reação ao peso é a força que o livro exerce sobre a Terra.',
+      pergunta: 'Um bloco foi empurrado e agora desliza sozinho sobre uma mesa sem atrito. Que forças atuam nele?',
+      opcoes: ['Só o peso e a normal', 'Peso, normal e uma força para a frente que mantém o movimento', 'Peso, normal e a força da mão que o empurrou'],
+      certa: 0,
+      explicacao: 'Depois que a mão solta o bloco, ela não age mais. E não existe “força do movimento”: sem atrito, a resultante é zero e o bloco segue com velocidade constante (1ª lei). Sobram o peso e a normal, que se equilibram.',
     },
     visual: { tipo: 'dcl', cenario: 'mesa' },
   },
@@ -91,12 +136,34 @@ export const RESUMO_DIN: SecaoResumo[] = [
   {
     titulo: 'Leis de Newton',
     formulas: [
+      { rotulo: '1ª lei (inércia)', tex: '\\vec F_{res} = \\vec 0 \\iff \\vec v\\ \\text{constante}' },
       { rotulo: '2ª lei', tex: '\\vec F_{res} = m\\,\\vec a' },
+      { rotulo: '3ª lei', tex: '\\vec F_{A \\to B} = -\\,\\vec F_{B \\to A}' },
       { rotulo: 'Peso', tex: 'P = m\\,g \\quad (g \\approx 10\\ \\text{m/s}^2)' },
       { rotulo: 'Unidade', tex: '1\\ \\text{N} = 1\\ \\text{kg}\\cdot\\text{m/s}^2' },
     ],
-    ideias: ['Resultante zero: repouso ou velocidade constante (1ª lei).', 'Ação e reação atuam em corpos diferentes, com o mesmo módulo (3ª lei).', 'Diagrama de corpo livre: só forças com agente (peso, normal, atrito, tração).'],
-    pegadinhas: ['Não existe “força do movimento”.', 'Peso e normal não são par ação e reação.', 'Massa (kg) não é peso (N).'],
+    ideias: [
+      'Resultante zero: repouso ou velocidade constante (1ª lei). Força serve para mudar a velocidade, não para mantê-la.',
+      'Ação e reação: mesmo módulo, sentidos opostos, corpos diferentes, ao mesmo tempo (3ª lei).',
+      'Forças iguais em massas diferentes dão acelerações diferentes: m₁·a₁ = m₂·a₂.',
+      'Diagrama de corpo livre: só forças com agente (peso, normal, atrito, tração).',
+    ],
+    pegadinhas: [
+      'Não existe “força do movimento”.',
+      'Ação e reação não se anulam: atuam em corpos diferentes.',
+      'Peso e normal não são par ação e reação; o par do peso é o corpo puxando a Terra.',
+      'Numa batida, o veículo mais leve não recebe força maior; ele acelera mais.',
+      'Massa (kg) não é peso (N).',
+    ],
+  },
+  {
+    titulo: 'Blocos encostados',
+    formulas: [
+      { rotulo: 'Aceleração comum', tex: 'a = \\dfrac{F}{m_A + m_B + \\dots}' },
+      { rotulo: 'Força de contato', tex: 'F_{\\text{contato}} = a \\cdot (\\text{massa à frente do contato})' },
+    ],
+    ideias: ['A força de contato é a única força horizontal que acelera o que está à frente dela.', '“A sobre B” e “B sobre A” têm o mesmo módulo (3ª lei).'],
+    pegadinhas: ['A força aplicada não passa inteira para o bloco seguinte.', 'A força não se divide em partes iguais: depende das massas.'],
   },
   {
     titulo: 'Atrito',

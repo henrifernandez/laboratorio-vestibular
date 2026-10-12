@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Line, Plot, Point, Text } from 'mafs'
-import { Link2 } from 'lucide-react'
+import { ArrowLeftRight, Link2 } from 'lucide-react'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { BotaoReiniciar } from '@/sim/BotaoReiniciar'
 import { Cena } from '@/sim/Cena'
@@ -11,7 +11,9 @@ import { useAnimacao } from '@/sim/useAnimacao'
 import { PainelDeVisibilidade } from '@/sim/PainelDeVisibilidade'
 import { G, angulos, atwood, forcaResultante, mesaComPolia, plano } from './calculo'
 import { DEFINICOES_DINAMICA } from './definicoes'
+import { patinadores, tempoAte } from './newton'
 import { BarrasPlano, MesaForcas, Rampa, ReguaAngulo, SistemaPolia, setasDoPlano } from './Visuais'
+import { CenaPatinadores, ComparacaoPar, PX_M } from './VisuaisNewton'
 import { Pista } from '../cinematica/Visuais'
 
 const fmt = (n: number, c = 2) => String(Math.round(n * 10 ** c) / 10 ** c).replace('.', ',')
@@ -311,12 +313,110 @@ function TelaPolias() {
   )
 }
 
+/* ------------------------------------------------------------------ Ação e reação: patinadores */
+
+const PADRAO_ACAO = { ma: 50, mb: 80, fp: 200, dtp: 0.5, t: 0, pares: true, vel: true, rastro: true }
+/** distância até a borda da pista (m), onde a animação termina */
+const PISTA_M = (160 - 26) / PX_M
+
+type PrevisaoAcao = 'A' | 'B' | 'iguais' | null
+
+function TelaAcaoReacao() {
+  const [e, atualizar, reiniciar] = useEstadoUrl(PADRAO_ACAO)
+  const [previsao, setPrevisao] = useState<PrevisaoAcao>(null)
+  const p = patinadores({ mA: e.ma, mB: e.mb, F: e.fp, dt: e.dtp })
+  const T = Math.min(5, tempoAte(Math.max(p.aA, p.aB), e.dtp, PISTA_M))
+  const t = Math.min(e.t, T)
+  const anim = useAnimacao(e.t, T, (v) => atualizar({ t: v }), 0.8)
+  const mudar = (parcial: Partial<typeof PADRAO_ACAO>) => {
+    anim.setRodando(false)
+    atualizar({ ...parcial, t: 0 })
+  }
+  const certa: PrevisaoAcao = e.ma === e.mb ? 'iguais' : e.ma < e.mb ? 'A' : 'B'
+  const soltos = t >= e.dtp
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+      <div className="grid content-start gap-3">
+        <CenaPatinadores mA={e.ma} mB={e.mb} F={e.fp} dt={e.dtp} t={t} forcas={e.pares} velocidades={e.vel} rastro={e.rastro} />
+        <ComparacaoPar mA={e.ma} mB={e.mb} F={e.fp} dt={e.dtp} />
+        <div className="cartao num grid gap-1 p-3" aria-live="polite">
+          <p>
+            {soltos ? 'Já se soltaram: ' : 'Empurrando: '}
+            cada um {soltos ? 'recebeu' : 'recebe'} <strong>{fmt(e.fp, 0)} N</strong>, em sentidos opostos.
+          </p>
+          <p className="text-sm text-[var(--ink-muted)]">
+            a_A = {fmt(e.fp, 0)}/{e.ma} = {fmt(p.aA)} m/s² · a_B = {fmt(e.fp, 0)}/{e.mb} = {fmt(p.aB)} m/s²
+          </p>
+          <p className="text-sm text-[var(--ink-muted)]">
+            {soltos
+              ? `Sem força, cada um segue com velocidade constante (1ª lei): v_A = ${fmt(p.vA)} m/s e v_B = ${fmt(p.vB)} m/s. Massa × velocidade: ${fmt(e.ma * p.vA)} kg·m/s para os dois.`
+              : `O empurrão dura ${fmt(e.dtp, 1)} s. Enquanto as mãos se tocam, as forças são iguais o tempo todo.`}
+          </p>
+          {soltos && previsao && (
+            <p className="text-sm" style={{ color: previsao === certa ? 'var(--ok)' : 'var(--erro)' }}>
+              {previsao === certa
+                ? 'Sua previsão estava certa.'
+                : certa === 'iguais'
+                  ? 'Sua previsão estava errada: com massas iguais, forças iguais dão velocidades iguais.'
+                  : `Sua previsão estava errada: as forças são iguais, então quem tem menos massa (${certa}) acelera mais e sai mais rápido.`}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="grid content-start gap-4">
+        <fieldset className="m-0 grid gap-1 rounded-[var(--radius)] border border-[var(--line)] p-3">
+          <legend className="px-1 text-sm font-semibold text-[var(--ink-muted)]">Antes de soltar: quem sai mais rápido?</legend>
+          {(
+            [
+              ['A', `A (${e.ma} kg)`],
+              ['B', `B (${e.mb} kg)`],
+              ['iguais', 'Os dois com a mesma velocidade'],
+            ] as const
+          ).map(([id, rot]) => (
+            <label key={id} className="flex min-h-11 cursor-pointer items-center gap-2">
+              <input type="radio" name="previsao-acao" checked={previsao === id} onChange={() => setPrevisao(id)} style={{ accentColor: 'var(--accent)' }} />
+              {rot}
+            </label>
+          ))}
+        </fieldset>
+        <ControleDeslizante rotulo="Massa de A" valor={e.ma} onChange={(v) => mudar({ ma: v })} min={30} max={120} passo={5} unidade="kg" marcas={[30, 75, 120]} />
+        <ControleDeslizante rotulo="Massa de B" valor={e.mb} onChange={(v) => mudar({ mb: v })} min={30} max={120} passo={5} unidade="kg" marcas={[30, 75, 120]} />
+        <ControleDeslizante rotulo="Força do empurrão" valor={e.fp} onChange={(v) => mudar({ fp: v })} min={50} max={400} passo={10} unidade="N" marcas={[50, 200, 400]} descricao="Cada um recebe essa força, em sentidos opostos" />
+        <ControleDeslizante rotulo="Duração do empurrão" valor={e.dtp} onChange={(v) => mudar({ dtp: v })} min={0.2} max={1} passo={0.1} unidade="s" marcas={[0.2, 0.6, 1]} />
+        <PainelDeVisibilidade
+          itens={[
+            { id: 'pares', rotulo: 'Forças do par', ativo: e.pares },
+            { id: 'vel', rotulo: 'Velocidades', ativo: e.vel },
+            { id: 'rastro', rotulo: 'Marcas a cada 0,5 s', ativo: e.rastro },
+          ]}
+          onChange={(id, ativo) => atualizar({ [id]: ativo })}
+        />
+        <fieldset className="m-0 grid gap-2 rounded-[var(--radius)] border border-[var(--line)] p-3">
+          <legend className="px-1 text-sm font-semibold text-[var(--ink-muted)]">Empurrar</legend>
+          <ControlesDeTempo rodando={anim.rodando} onAlternar={anim.alternar} onPasso={() => anim.passo(0.1)} velocidade={anim.velocidade} onVelocidade={anim.setVelocidade} />
+        </fieldset>
+        <div className="flex flex-wrap items-center gap-2">
+          <BotaoReiniciar
+            onClick={() => {
+              anim.setRodando(false)
+              setPrevisao(null)
+              reiniciar()
+            }}
+          />
+          <BotaoLink />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Laboratorio() {
   return (
     <LaboratorioTelas
       telas={[
         { id: 'intro', conteudo: <TelaPlano /> },
         { id: 'explorar', conteudo: <Tela2aLei /> },
+        { id: 'acao', rotulo: 'Ação e reação', icone: <ArrowLeftRight size={18} />, conteudo: <TelaAcaoReacao /> },
         { id: 'lab', conteudo: <TelaPolias /> },
       ]}
       desafios={DEFINICOES_DINAMICA}

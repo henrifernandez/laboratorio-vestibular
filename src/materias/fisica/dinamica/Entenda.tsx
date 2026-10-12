@@ -3,8 +3,12 @@ import { EntendaPassos, type PassoEntenda } from '@/componentes/EntendaPassos'
 import { atwood } from './calculo'
 import { diagrama } from './dcl'
 import { FiguraDCL, MesaForcas, Rampa, SistemaPolia, setasDoPlano } from './Visuais'
+import { OnibusInercia, PatinadoresAnimados, ParesLivroMesa } from './VisuaisNewton'
 
 function Visual({ v }: { v: VisualDin }) {
+  if (v.tipo === 'onibus') return <OnibusInercia />
+  if (v.tipo === 'patinadores') return <PatinadoresAnimados mA={v.mA} mB={v.mB} F={v.F} dt={v.dt} />
+  if (v.tipo === 'pares') return <ParesLivroMesa />
   if (v.tipo === 'mesa') return <MesaForcas F={v.F} m={v.m} mu={v.mu} />
   if (v.tipo === 'dcl') {
     const g = diagrama.gabarito(v.cenario)

@@ -6,7 +6,10 @@ import type { DefinicaoQualquer } from '@/desafios/PainelDesafio'
 import { BarraDeTelas, type Tela } from './BarraDeTelas'
 
 export interface TelaLab {
-  id: 'intro' | 'explorar' | 'lab'
+  /** 'intro', 'explorar' e 'lab' já têm rótulo e ícone; outras telas trazem os seus */
+  id: string
+  rotulo?: string
+  icone?: ReactNode
   /** conteúdo da tela; o componente é remontado ao entrar */
   conteudo: ReactNode
 }
@@ -18,11 +21,14 @@ const ROTULOS: Record<string, { rotulo: string; icone: ReactNode }> = {
   jogo: { rotulo: 'Jogo', icone: <Gamepad2 size={18} /> },
 }
 
-/** Simulação com as telas Introdução, Explorar, Laboratório e Jogo numa barra inferior. A tela fica na URL (?tela=). */
+/** Simulação com as telas Introdução, Explorar, Laboratório (e outras, se houver) e Jogo numa barra inferior. A tela fica na URL (?tela=). */
 export function LaboratorioTelas({ telas, desafios }: { telas: TelaLab[]; desafios: DefinicaoQualquer[] }) {
   const [busca, setBusca] = useSearchParams()
   const lista: Tela[] = useMemo(
-    () => [...telas.map((t) => ({ id: t.id, ...(ROTULOS[t.id] as { rotulo: string }) })), { id: 'jogo', ...(ROTULOS.jogo as { rotulo: string }) }],
+    () => [
+      ...telas.map((t) => ({ id: t.id, rotulo: t.rotulo ?? ROTULOS[t.id]?.rotulo ?? t.id, icone: t.icone ?? ROTULOS[t.id]?.icone })),
+      { id: 'jogo', ...(ROTULOS.jogo as { rotulo: string }) },
+    ],
     [telas],
   )
   const atual = lista.find((t) => t.id === busca.get('tela'))?.id ?? (telas[0]?.id as string)

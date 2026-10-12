@@ -3,7 +3,9 @@ import type { DefinicaoDesafio, DefinicaoQualquer, EntradaProps } from '@/desafi
 import { criarDefMulti, criarDefNum } from '@/desafios/simples'
 import { DESCRICAO, FORCAS, NOME_DIRECAO, diagrama, type CenarioId, type Direcao, type InstanciaDCL, type RespostaDCL } from './dcl'
 import { gerarAtrito, gerarDeslizar, gerarSistema, type DadosAtrito, type DadosDeslizar, type DadosSistema } from './geradores'
+import { gerarAcao, gerarLeis, type DadosAcao, type DadosLeis } from './geradoresNewton'
 import { FiguraDCL, VisualAtrito, VisualDeslizar, VisualSistema } from './Visuais'
+import { OpcaoLei, VisualAcao, VisualLeis } from './VisuaisNewton'
 
 const base = { materia: 'fisica' as const, tema: 'dinamica' }
 
@@ -96,5 +98,22 @@ export const DEFINICOES_DINAMICA: DefinicaoQualquer[] = [
     instrucao: 'Escreva F = m·a para cada bloco, some as equações e resolva.',
     gerar: gerarSistema,
     Visual: VisualSistema,
+  }),
+  criarDefMulti<DadosLeis>({
+    ...base,
+    id: 'fisica/dinamica/leis',
+    titulo: 'Qual lei de Newton?',
+    instrucao: 'Leia a situação e escolha a lei de Newton que a explica. No nível 3, encontre o par de ação e reação.',
+    gerar: gerarLeis,
+    Visual: VisualLeis,
+    Opcao: OpcaoLei,
+  }),
+  criarDefNum<DadosAcao>({
+    ...base,
+    id: 'fisica/dinamica/acao-reacao',
+    titulo: 'Ação e reação',
+    instrucao: 'Use que as forças do par têm o mesmo módulo e aplique a 2ª lei a cada corpo.',
+    gerar: gerarAcao,
+    Visual: VisualAcao,
   }),
 ]

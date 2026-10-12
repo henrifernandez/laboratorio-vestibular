@@ -37,7 +37,7 @@ export function BarraDeTelas({ telas, atual, onChange }: Props) {
             tabIndex={ativa ? 0 : -1}
             onClick={() => onChange(t.id)}
             onKeyDown={(e) => mover(e, i)}
-            className="flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-sm font-semibold transition-colors"
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 font-semibold transition-colors ${telas.length > 4 ? 'px-0.5 text-[0.6875rem] leading-tight sm:px-1 sm:text-sm' : 'px-1 text-sm'}`}
             style={{
               color: ativa ? 'var(--accent)' : 'var(--ink-muted)',
               boxShadow: ativa ? 'inset 0 3px 0 var(--accent)' : 'none',
