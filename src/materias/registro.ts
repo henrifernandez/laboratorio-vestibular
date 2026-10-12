@@ -25,6 +25,7 @@ export const MODULOS: Record<string, Carregador> = {
   'fisica/dinamica': () => import('./fisica/dinamica'),
   'fisica/termologia': () => import('./fisica/termologia'),
   'fisica/eletricidade': () => import('./fisica/eletricidade'),
+  'quimica/estequiometria': () => import('./quimica/estequiometria'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {
