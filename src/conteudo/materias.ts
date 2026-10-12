@@ -69,7 +69,7 @@ export const MATERIAS: MateriaInfo[] = [
       t('solucoes', 'Soluções e concentração', 'Béquer e curva de solubilidade.', true, 12),
       t('organica', 'Química orgânica', 'Grupos funcionais, isômeros e nomes.', true, 12),
       t('equilibrio-ph', 'Equilíbrio, ácidos, bases e pH', 'Le Chatelier e escala de pH.', true, 12),
-      t('cinetica', 'Cinética química', 'Colisões, energia de ativação e catalisador.'),
+      t('cinetica', 'Cinética química', 'Colisões, energia de ativação e catalisador.', true, 12),
       t('quimica-verde', 'Meio ambiente e química verde', 'Chuva ácida, efeito estufa e práticas sustentáveis.'),
     ],
   },
