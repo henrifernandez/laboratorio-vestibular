@@ -161,6 +161,8 @@ export interface BequerEtapa {
   volume: number | null
   /** concentração (mol/L); null = a pergunta */
   c: number | null
+  /** texto no lugar de "? mol/L" quando a pergunta é outra (por exemplo, "pH = ?") */
+  rotuloC?: string
 }
 
 export interface DadosDiluicao {

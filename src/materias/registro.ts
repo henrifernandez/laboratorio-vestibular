@@ -28,6 +28,7 @@ export const MODULOS: Record<string, Carregador> = {
   'quimica/estequiometria': () => import('./quimica/estequiometria'),
   'quimica/solucoes': () => import('./quimica/solucoes'),
   'quimica/organica': () => import('./quimica/organica'),
+  'quimica/equilibrio-ph': () => import('./quimica/equilibrio-ph'),
 }
 
 export function temaDisponivel(materia: string, tema: string) {

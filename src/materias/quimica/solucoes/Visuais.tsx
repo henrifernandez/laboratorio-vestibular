@@ -162,7 +162,7 @@ export function CadeiaBequeres({ etapas, ligacoes }: { etapas: BequerEtapa[]; li
               <figcaption>
                 <strong>{e.rotulo}</strong>
                 <span className="num block text-[var(--ink-muted)]">{e.volume === null ? '? mL' : `${f(e.volume, 0)} mL`}</span>
-                <span className="num block text-[var(--ink-muted)]">{e.c === null ? '? mol/L' : `${f(e.c)} mol/L`}</span>
+                <span className="num block text-[var(--ink-muted)]">{e.c === null ? (e.rotuloC ?? '? mol/L') : `${f(e.c)} mol/L`}</span>
               </figcaption>
             </figure>
           </div>
