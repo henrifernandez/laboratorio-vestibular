@@ -57,7 +57,7 @@ export const MATERIAS: MateriaInfo[] = [
       t('cinematica', 'Cinemática', 'Posição, velocidade, aceleração e lançamentos.', true, 12),
       t('dinamica', 'Dinâmica', 'Forças, atrito e plano inclinado.', true, 12),
       t('termologia', 'Termologia e calorimetria', 'Curvas de aquecimento, misturas e gases.', true, 12),
-      t('eletricidade', 'Eletricidade', 'Circuitos em série e paralelo, consumo.'),
+      t('eletricidade', 'Eletricidade', 'Circuitos em série e paralelo, consumo.', true, 12),
     ],
   },
   {
