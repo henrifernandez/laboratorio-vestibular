@@ -10,19 +10,19 @@ export const ANO_MAX = 2030
 
 /** Períodos coloridos de cada região. As eras são contínuas: o fim de uma é o início da seguinte. */
 export const ERAS: Era[] = [
-  { id: 'me-moderna', nome: 'Idade Moderna', regiao: 'mundo', inicio: 1453, fim: 1789, cor: '#92400e', resumo: 'Expansão marítima, absolutismo, mercantilismo, Reforma e Iluminismo.' },
-  { id: 'me-revolucoes', nome: 'Era das Revoluções', regiao: 'mundo', inicio: 1789, fim: 1870, cor: '#be123c', resumo: 'Revolução Industrial, revoluções burguesas, independências americanas e formação dos Estados nacionais.' },
-  { id: 'me-imperialismo', nome: 'Imperialismo', regiao: 'mundo', inicio: 1870, fim: 1914, cor: '#7c3aed', resumo: 'Segunda Revolução Industrial, capital financeiro e partilha da África e da Ásia.' },
-  { id: 'me-guerras', nome: 'Guerras e crise', regiao: 'mundo', inicio: 1914, fim: 1945, cor: '#c2410c', resumo: 'Duas guerras mundiais, Revolução Russa, crise de 1929 e totalitarismos.' },
-  { id: 'me-guerra-fria', nome: 'Guerra Fria', regiao: 'mundo', inicio: 1945, fim: 1991, cor: '#0369a1', resumo: 'Mundo bipolar (EUA × URSS), descolonização e corrida armamentista.' },
-  { id: 'me-atual', nome: 'Mundo atual', regiao: 'mundo', inicio: 1991, fim: 2025, cor: '#0f766e', resumo: 'Globalização, hegemonia dos EUA, terrorismo e crises financeiras.' },
-  { id: 'br-colonia', nome: 'Colônia', regiao: 'brasil', inicio: 1500, fim: 1822, cor: '#b45309', resumo: 'Açúcar, mineração, escravidão africana e pacto colonial.' },
-  { id: 'br-imperio', nome: 'Império', regiao: 'brasil', inicio: 1822, fim: 1889, cor: '#6d28d9', resumo: 'Monarquia, café, Guerra do Paraguai e abolição da escravidão.' },
-  { id: 'br-rep-velha', nome: 'República Velha', regiao: 'brasil', inicio: 1889, fim: 1930, cor: '#0f766e', resumo: 'República oligárquica, café com leite, coronelismo e revoltas sociais.' },
-  { id: 'br-vargas', nome: 'Era Vargas', regiao: 'brasil', inicio: 1930, fim: 1945, cor: '#b3261e', resumo: 'Centralização, industrialização, leis trabalhistas e Estado Novo.' },
-  { id: 'br-democracia', nome: 'República de 1946', regiao: 'brasil', inicio: 1945, fim: 1964, cor: '#1d4ed8', resumo: 'Democracia com partidos, desenvolvimentismo, populismo e polarização.' },
-  { id: 'br-ditadura', nome: 'Ditadura militar', regiao: 'brasil', inicio: 1964, fim: 1985, cor: '#475569', resumo: 'Governos militares, censura, repressão, milagre econômico e abertura.' },
-  { id: 'br-nova-rep', nome: 'Nova República', regiao: 'brasil', inicio: 1985, fim: 2025, cor: '#15803d', resumo: 'Redemocratização, Constituição de 1988, estabilização da moeda e programas sociais.' },
+  { id: 'me-moderna', nome: 'Idade Moderna', curto: 'Moderna', regiao: 'mundo', inicio: 1453, fim: 1789, cor: '#92400e', resumo: 'Expansão marítima, absolutismo, mercantilismo, Reforma e Iluminismo.' },
+  { id: 'me-revolucoes', nome: 'Era das Revoluções', curto: 'Revoluções', regiao: 'mundo', inicio: 1789, fim: 1870, cor: '#be123c', resumo: 'Revolução Industrial, revoluções burguesas, independências americanas e formação dos Estados nacionais.' },
+  { id: 'me-imperialismo', nome: 'Imperialismo', curto: 'Imper.', regiao: 'mundo', inicio: 1870, fim: 1914, cor: '#7c3aed', resumo: 'Segunda Revolução Industrial, capital financeiro e partilha da África e da Ásia.' },
+  { id: 'me-guerras', nome: 'Guerras e crise', curto: 'Guerras', regiao: 'mundo', inicio: 1914, fim: 1945, cor: '#c2410c', resumo: 'Duas guerras mundiais, Revolução Russa, crise de 1929 e totalitarismos.' },
+  { id: 'me-guerra-fria', nome: 'Guerra Fria', curto: 'G. Fria', regiao: 'mundo', inicio: 1945, fim: 1991, cor: '#0369a1', resumo: 'Mundo bipolar (EUA × URSS), descolonização e corrida armamentista.' },
+  { id: 'me-atual', nome: 'Mundo atual', curto: 'Atual', regiao: 'mundo', inicio: 1991, fim: 2025, cor: '#0f766e', resumo: 'Globalização, hegemonia dos EUA, terrorismo e crises financeiras.' },
+  { id: 'br-colonia', nome: 'Colônia', curto: 'Colônia', regiao: 'brasil', inicio: 1500, fim: 1822, cor: '#b45309', resumo: 'Açúcar, mineração, escravidão africana e pacto colonial.' },
+  { id: 'br-imperio', nome: 'Império', curto: 'Império', regiao: 'brasil', inicio: 1822, fim: 1889, cor: '#6d28d9', resumo: 'Monarquia, café, Guerra do Paraguai e abolição da escravidão.' },
+  { id: 'br-rep-velha', nome: 'República Velha', curto: 'Rep. Velha', regiao: 'brasil', inicio: 1889, fim: 1930, cor: '#0f766e', resumo: 'República oligárquica, café com leite, coronelismo e revoltas sociais.' },
+  { id: 'br-vargas', nome: 'Era Vargas', curto: 'Vargas', regiao: 'brasil', inicio: 1930, fim: 1945, cor: '#b3261e', resumo: 'Centralização, industrialização, leis trabalhistas e Estado Novo.' },
+  { id: 'br-democracia', nome: 'República de 1946', curto: '1946', regiao: 'brasil', inicio: 1945, fim: 1964, cor: '#1d4ed8', resumo: 'Democracia com partidos, desenvolvimentismo, populismo e polarização.' },
+  { id: 'br-ditadura', nome: 'Ditadura militar', curto: 'Ditadura', regiao: 'brasil', inicio: 1964, fim: 1985, cor: '#475569', resumo: 'Governos militares, censura, repressão, milagre econômico e abertura.' },
+  { id: 'br-nova-rep', nome: 'Nova República', curto: 'Nova Rep.', regiao: 'brasil', inicio: 1985, fim: 2025, cor: '#15803d', resumo: 'Redemocratização, Constituição de 1988, estabilização da moeda e programas sociais.' },
 ]
 
 /** Janelas de tempo para comparar o Brasil e o mundo. */

@@ -295,3 +295,63 @@ export function FaixasComCursor({ ano }: { ano: number }) {
   )
 }
 
+
+/* ------------------------------------------------------------------ como ler a linha do tempo */
+
+export function LegendaLinha() {
+  const tipos = (Object.keys(NOME_TIPO) as (keyof typeof NOME_TIPO)[]).map((t) => ({ t, Icone: ICONE_TIPO[t] }))
+  return (
+    <details open className="cartao p-3">
+      <summary className="cursor-pointer font-semibold">Como ler esta linha do tempo</summary>
+      <ul className="m-0 mt-2 grid gap-1.5 pl-5">
+        <li>
+          <strong>Mundo em cima, Brasil embaixo.</strong> No meio fica o eixo com os anos.
+        </li>
+        <li>
+          <strong>Faixas coloridas</strong> são as eras (períodos históricos). Clique numa faixa, ou num botão de período abaixo, para ampliar aquele período.
+        </li>
+        <li>
+          <strong>Ponto + haste:</strong> o ponto marca o ano em que o acontecimento <em>começou</em> e a haste o liga ao cartão com o ano e o nome. A borda esquerda do cartão tem a cor da era.
+        </li>
+        <li>
+          <strong>Acontecimentos que duram anos:</strong> o cartão mostra o intervalo (por exemplo, 1789–1799). Ao clicar nele, uma barra grossa ao lado da faixa mostra a duração. “c.” quer dizer “por volta de”.
+        </li>
+        <li className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <strong>Ícones, o tipo de acontecimento:</strong>
+          {tipos.map(({ t, Icone }) => (
+            <span key={t} className="inline-flex items-center gap-1">
+              <Icone size={15} aria-hidden="true" style={{ color: COR_TIPO[t] }} />
+              {NOME_TIPO[t]}
+            </span>
+          ))}
+        </li>
+        <li>
+          <strong>Zoom e deslocamento:</strong> roda do mouse, dois dedos ou os botões; arraste para mover. O resumo, logo abaixo da linha, mostra onde você está em todo o período.
+        </li>
+        <li>Cartões que não cabem na tela aparecem quando você aproxima: os mais importantes aparecem primeiro.</li>
+      </ul>
+    </details>
+  )
+}
+
+/** Botões para ir direto a um período do Brasil ou do mundo. */
+export function PeriodosRapidos({ onEscolher }: { onEscolher: (inicio: number, fim: number) => void }) {
+  const grupo = (titulo: string, regiao: 'brasil' | 'mundo') => (
+    <div className="grid gap-1">
+      <h3 className="m-0 text-sm font-semibold text-[var(--ink-muted)]">{titulo}</h3>
+      <div className="flex flex-wrap gap-2">
+        {ERAS.filter((e) => e.regiao === regiao).map((e) => (
+          <button key={e.id} type="button" className="btn text-sm" style={{ borderLeft: `6px solid ${e.cor}`, background: fundoDaEra(e.cor) }} onClick={() => onEscolher(e.inicio, e.fim)} title={e.resumo}>
+            {e.nome} <span className="num text-[var(--ink-muted)]">{e.inicio}–{e.fim}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+  return (
+    <div className="grid gap-3">
+      {grupo('Períodos do mundo', 'mundo')}
+      {grupo('Períodos do Brasil', 'brasil')}
+    </div>
+  )
+}

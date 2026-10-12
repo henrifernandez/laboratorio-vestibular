@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as PointerReact } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as PointerReact } from 'react'
 import { Coins, Landmark, Palette, Swords, Users, type LucideIcon } from 'lucide-react'
+import { ANO_MAX, ANO_MIN } from '@/conteudo/historia/linhaDoTempo'
 import { rotuloAno, type Acontecimento, type Era, type TipoEvento } from '@/conteudo/historia/tipos'
 import { VISTA_TOTAL, deslocar, limitarVista, marcasDoEixo, posicaoDoAno, posicionarRotulos, trechoVisivel, vistaParaIntervalo, zoomEm, type Vista } from './calculo'
 
@@ -9,12 +10,17 @@ export const COR_TIPO: Record<TipoEvento, string> = { politico: 'var(--el-n)', e
 /** Fundo suave de uma era: a cor dela misturada com a superfície, para o texto manter o contraste. */
 export const fundoDaEra = (cor: string) => `color-mix(in srgb, ${cor} 20%, var(--surface))`
 
-const FAIXA = 24 // espessura da faixa de eras
-const GAP = 15 // metade da faixa do eixo (marcas dos anos)
-const MARGEM = 8 // espaço entre a faixa e o primeiro rótulo
-const LINHA_ALTURA = 44
-const LINHA_PASSO = 50
-const ROTULO_L = 132
+const FAIXA = 28 // espessura da faixa de eras
+const GAP = 18 // metade da faixa do eixo, onde ficam os anos
+const MARGEM = 12 // espaço entre a faixa de eras e o primeiro rótulo
+const ALTURA_H = 580 // altura da linha do tempo horizontal
+const ALTURA_V = 560 // altura da linha do tempo vertical (celular)
+const RODAPE_V = 0
+const ROTULO_H = 54 // altura de um rótulo na horizontal
+const PASSO_H = 60 // distância entre linhas de rótulos na horizontal
+const ROTULO_L = 158 // largura de um rótulo na horizontal
+const ROTULO_V = 82 // altura de um rótulo na vertical (ao longo do eixo)
+const CARACTERE = 6.8 // largura média de um caractere de 11–12 px, para decidir se o nome da era cabe
 
 interface Props {
   eventos: Acontecimento[]
@@ -27,22 +33,58 @@ interface Props {
   mostrarBrasil: boolean
 }
 
+/** Resumo do tempo todo, com a janela atual em destaque; clicar ou arrastar leva a janela para aquele ponto. */
+function Minimapa({ eras, vista, onVista, mostrarMundo, mostrarBrasil }: Pick<Props, 'eras' | 'vista' | 'onVista' | 'mostrarMundo' | 'mostrarBrasil'>) {
+  const total = ANO_MAX - ANO_MIN
+  const pct = (a: number) => `${((Math.min(ANO_MAX, Math.max(ANO_MIN, a)) - ANO_MIN) / total) * 100}%`
+  const ir = (ev: PointerReact<HTMLDivElement>) => {
+    const r = ev.currentTarget.getBoundingClientRect()
+    const ano = ANO_MIN + ((ev.clientX - r.left) / r.width) * total
+    onVista(limitarVista({ c: ano, s: vista.s }))
+  }
+  const faixa = (regiao: 'mundo' | 'brasil') =>
+    eras
+      .filter((e) => e.regiao === regiao)
+      .map((e) => <div key={e.id} className="absolute inset-y-0" style={{ left: pct(e.inicio), width: `${((e.fim - e.inicio) / total) * 100}%`, background: e.cor, opacity: 0.55 }} />)
+  return (
+    <div className="grid gap-1" aria-hidden="true">
+      <div
+        className="relative h-9 cursor-pointer touch-none overflow-hidden rounded-md border border-[var(--line-strong)] bg-[var(--surface-2)]"
+        onPointerDown={(ev) => {
+          ev.currentTarget.setPointerCapture?.(ev.pointerId)
+          ir(ev)
+        }}
+        onPointerMove={(ev) => ev.buttons === 1 && ir(ev)}
+      >
+        {mostrarMundo && <div className="absolute inset-x-0 top-0 h-[42%]">{faixa('mundo')}</div>}
+        {mostrarBrasil && <div className="absolute inset-x-0 bottom-0 h-[42%]">{faixa('brasil')}</div>}
+        <div className="absolute inset-y-0 rounded-sm border-2 border-[var(--ink)] bg-[var(--ink)]/10" style={{ left: pct(vista.c - vista.s / 2), width: `${Math.min(100, (vista.s / total) * 100)}%` }} />
+      </div>
+      <div className="num flex justify-between text-[11px] text-[var(--ink-muted)]">
+        <span>{ANO_MIN + 10}</span>
+        <span>Resumo de todo o período: arraste a moldura para navegar</span>
+        <span>{ANO_MAX - 5}</span>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Linha do tempo com zoom (roda do mouse, pinça e teclas) e arraste. Horizontal quando há espaço; vertical no celular.
  * Mundo de um lado do eixo e Brasil do outro; os acontecimentos mais importantes aparecem primeiro e os demais, ao aproximar.
  */
 export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSelecionar, mostrarMundo, mostrarBrasil }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const [dim, setDim] = useState({ w: 900, h: 440 })
-  const vertical = dim.w < 640
-  const altura = vertical ? 520 : 440
+  const [largura, setLargura] = useState(900)
+  const vertical = largura < 640
+  const altura = vertical ? ALTURA_V : ALTURA_H
 
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const medir = () => {
       const w = el.getBoundingClientRect().width
-      if (w > 0) setDim({ w, h: vertical ? 520 : 440 })
+      if (w > 0) setLargura(w)
     }
     medir()
     if (typeof ResizeObserver === 'undefined') return
@@ -51,17 +93,17 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
     return () => ro.disconnect()
   }, [vertical])
 
-  const L = vertical ? altura : dim.w // comprimento do eixo
-  const cruz = vertical ? dim.w : altura // largura transversal
+  const L = vertical ? altura - RODAPE_V : largura // comprimento do eixo
+  const cruz = vertical ? largura : altura // largura transversal
   const eixo = cruz / 2
   const bordaMundo = eixo - GAP - FAIXA
   const bordaBrasil = eixo + GAP + FAIXA
 
   // linhas de rótulos de cada lado
   const espaco = eixo - GAP - FAIXA - MARGEM
-  const linhas = vertical ? Math.max(1, Math.floor(espaco / (ROTULO_L + 6))) : Math.max(1, Math.floor((espaco + 6) / LINHA_PASSO))
-  const tamanho = vertical ? LINHA_ALTURA + 2 : ROTULO_L
-  const larguraRotulo = vertical ? Math.min(ROTULO_L + 20, Math.floor(espaco / linhas) - 4) : ROTULO_L
+  const linhas = vertical ? 1 : Math.max(1, Math.floor((espaco + 6) / PASSO_H))
+  const tamanho = vertical ? ROTULO_V : ROTULO_L
+  const larguraRotulo = vertical ? Math.max(96, Math.floor(espaco) - 4) : ROTULO_L
 
   const lado = useMemo(() => {
     const opcoes = { L, vista, tamanho, linhas, centrado: vertical }
@@ -75,6 +117,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
   const vistaRef = useRef(vista)
   const onVistaRef = useRef(onVista)
   const dimRef = useRef({ vertical, L })
+  const arrastou = useRef(false)
   useEffect(() => {
     vistaRef.current = vista
     onVistaRef.current = onVista
@@ -100,6 +143,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
   const coord = (p: { x: number; y: number }) => (vertical ? p.y : p.x)
 
   const aoPressionar = (ev: PointerReact<HTMLDivElement>) => {
+    arrastou.current = false
     if ((ev.target as HTMLElement).closest('button')) return
     ponteiros.current.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
     const pts = [...ponteiros.current.values()]
@@ -109,6 +153,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
       const [a, b] = pts as [{ x: number; y: number }, { x: number; y: number }]
       const meio = vertical ? (a.y + b.y) / 2 - r.top : (a.x + b.x) / 2 - r.left
       gesto.current = { tipo: 'pinch', vista0: vista, ini: 0, distancia0: Math.hypot(a.x - b.x, a.y - b.y), ancora: Math.min(1, Math.max(0, meio / (vertical ? r.height : r.width))), moveu: true }
+      arrastou.current = true
     }
   }
   const aoMover = (ev: PointerReact<HTMLDivElement>) => {
@@ -124,6 +169,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
       const delta = coord(pts[0] as { x: number; y: number }) - g.ini
       if (!g.moveu && Math.abs(delta) > 4) {
         g.moveu = true
+        arrastou.current = true
         ev.currentTarget.setPointerCapture?.(ev.pointerId)
       }
       if (g.moveu) onVista(limitarVista({ c: g.vista0.c - (delta / L) * g.vista0.s, s: g.vista0.s }))
@@ -155,7 +201,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
   /* ---------- desenho ---------- */
   const marcas = marcasDoEixo(vista)
   const p = (ano: number) => posicaoDoAno(ano, vista, L)
-  const eixoStyle = vertical ? { left: eixo - 1, top: 0, bottom: 0, width: 2 } : { top: eixo - 1, left: 0, right: 0, height: 2 }
+  const eixoStyle: CSSProperties = vertical ? { left: eixo - 1, top: 0, bottom: 0, width: 2 } : { top: eixo - 1, left: 0, right: 0, height: 2 }
   const ocultos = (mostrarMundo ? lado.mundo.ocultos : 0) + (mostrarBrasil ? lado.brasil.ocultos : 0)
   const porId = new Map(eventos.map((e) => [e.id, e]))
 
@@ -167,31 +213,35 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
       const Icone = ICONE_TIPO[e.tipo]
       const sel = selecionado === e.id
       const era = eras.find((x) => x.regiao === e.regiao && e.inicio >= x.inicio && e.inicio <= x.fim)
-      // posição transversal do rótulo
-      const afastamento = MARGEM + c.linha * (vertical ? 0 : LINHA_PASSO)
-      let estilo: React.CSSProperties
+      const afastamento = MARGEM + c.linha * PASSO_H
+      let estilo: CSSProperties
       if (vertical) {
-        estilo = mundo ? { top: c.inicio, right: dim.w - bordaMundo + MARGEM, width: larguraRotulo, height: tamanho - 2 } : { top: c.inicio, left: bordaBrasil + MARGEM, width: larguraRotulo, height: tamanho - 2 }
+        estilo = mundo ? { top: c.inicio, right: largura - bordaMundo + MARGEM, width: larguraRotulo, height: ROTULO_V - 4 } : { top: c.inicio, left: bordaBrasil + MARGEM, width: larguraRotulo, height: ROTULO_V - 4 }
       } else {
-        estilo = mundo ? { left: c.inicio, bottom: cruz - bordaMundo + afastamento, width: ROTULO_L, height: LINHA_ALTURA } : { left: c.inicio, top: bordaBrasil + afastamento, width: ROTULO_L, height: LINHA_ALTURA }
+        estilo = mundo ? { left: c.inicio, bottom: cruz - bordaMundo + afastamento, width: ROTULO_L, height: ROTULO_H } : { left: c.inicio, top: bordaBrasil + afastamento, width: ROTULO_L, height: ROTULO_H }
       }
       return (
         <div key={e.id}>
-          {/* haste e ponto sobre a faixa */}
-          {!vertical && <div aria-hidden="true" className="absolute w-px bg-[var(--line-strong)]" style={{ left: c.pos, ...(mundo ? { bottom: cruz - bordaMundo, height: afastamento } : { top: bordaBrasil, height: afastamento }) }} />}
-          <div aria-hidden="true" className="absolute size-2.5 rounded-full border-2 border-[var(--surface)]" style={{ background: COR_TIPO[e.tipo], ...(vertical ? { top: c.pos - 5, ...(mundo ? { left: bordaMundo - 5 } : { left: bordaBrasil - 5 }) } : { left: c.pos - 5, ...(mundo ? { top: bordaMundo - 5 } : { top: bordaBrasil - 5 }) }) }} />
+          {/* haste: passa por trás dos rótulos, para ligar o ano ao cartão */}
+          {!vertical && <div aria-hidden="true" className="absolute w-px bg-[var(--line-strong)]" style={{ zIndex: 1, left: c.pos, ...(mundo ? { bottom: cruz - bordaMundo, height: afastamento } : { top: bordaBrasil, height: afastamento }) }} />}
+          {vertical && <div aria-hidden="true" className="absolute h-px bg-[var(--line-strong)]" style={{ zIndex: 1, top: c.pos, ...(mundo ? { right: largura - bordaMundo, width: MARGEM } : { left: bordaBrasil, width: MARGEM }) }} />}
+          <div aria-hidden="true" className="absolute size-3 rounded-full border-2 border-[var(--surface)]" style={{ zIndex: 3, background: COR_TIPO[e.tipo], ...(vertical ? { top: c.pos - 6, ...(mundo ? { left: bordaMundo - 6 } : { left: bordaBrasil - 6 }) } : { left: c.pos - 6, ...(mundo ? { top: bordaMundo - 6 } : { top: bordaBrasil - 6 }) }) }} />
           <button
             type="button"
             aria-pressed={sel}
             aria-label={`${e.titulo}, ${rotuloAno(e)}`}
+            title={`${e.titulo} (${rotuloAno(e)})`}
             onClick={() => onSelecionar(e.id)}
-            className="absolute flex items-start gap-1 overflow-hidden rounded-md border bg-[var(--surface)] px-1.5 py-1 text-left leading-tight shadow-sm transition-colors hover:bg-[var(--surface-2)]"
-            style={{ ...estilo, borderColor: sel ? 'var(--accent)' : 'var(--line-strong)', borderLeftColor: era?.cor ?? 'var(--line-strong)', borderLeftWidth: 4, outline: sel ? '2px solid var(--accent)' : undefined }}
+            className="absolute flex items-start gap-1.5 overflow-hidden rounded-md border bg-[var(--surface)] px-1.5 py-1 text-left leading-tight shadow-sm transition-colors hover:bg-[var(--surface-2)]"
+            style={{ ...estilo, zIndex: sel ? 6 : 4, borderColor: sel ? 'var(--accent)' : 'var(--line-strong)', borderLeftColor: era?.cor ?? 'var(--line-strong)', borderLeftWidth: 5, outline: sel ? '3px solid var(--accent)' : undefined }}
           >
-            <Icone size={13} aria-hidden="true" style={{ color: COR_TIPO[e.tipo], flex: 'none', marginTop: 1 }} />
+            {!vertical && <Icone size={14} aria-hidden="true" style={{ color: COR_TIPO[e.tipo], flex: 'none', marginTop: 1 }} />}
             <span className="min-w-0">
-              <span className="num block text-[11px] font-bold">{rotuloAno(e)}</span>
-              <span className="line-clamp-2 block text-[11px]">{e.titulo}</span>
+              <span className="num flex items-center gap-1 text-xs font-bold">
+                {vertical && <Icone size={13} aria-hidden="true" style={{ color: COR_TIPO[e.tipo], flex: 'none' }} />}
+                {rotuloAno(e)}
+              </span>
+              <span className={`block text-xs ${vertical ? 'line-clamp-4' : 'line-clamp-2'}`}>{e.titulo}</span>
             </span>
           </button>
         </div>
@@ -208,36 +258,37 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         if (!t) return null
         const larg = t.b - t.a
         const posCruz = mundo ? bordaMundo : eixo + GAP
-        const estilo: React.CSSProperties = vertical ? { top: t.a, height: larg, left: posCruz, width: FAIXA } : { left: t.a, width: larg, top: posCruz, height: FAIXA }
+        const estilo: CSSProperties = vertical ? { top: t.a, height: larg, left: posCruz, width: FAIXA } : { left: t.a, width: larg, top: posCruz, height: FAIXA }
+        // o nome inteiro, o curto ou nada, conforme o espaço
+        const nome = larg >= era.nome.length * CARACTERE + 18 ? era.nome : larg >= era.curto.length * CARACTERE + 14 ? era.curto : ''
         return (
           <div
             key={era.id}
-            aria-hidden="true"
-            title={`${era.nome} (${era.inicio}–${era.fim})`}
-            onDoubleClick={() => onVista(vistaParaIntervalo(era.inicio, era.fim))}
-            className="absolute flex items-center justify-center overflow-hidden text-[11px] font-semibold"
-            style={{ ...estilo, background: fundoDaEra(era.cor), borderLeft: vertical ? undefined : `3px solid ${era.cor}`, borderTop: vertical ? `3px solid ${era.cor}` : undefined, writingMode: vertical ? 'vertical-rl' : undefined }}
+            title={`${era.nome} (${era.inicio}–${era.fim}): ${era.resumo} Clique para ver o período.`}
+            onClick={() => !arrastou.current && onVista(vistaParaIntervalo(era.inicio, era.fim))}
+            className="absolute flex cursor-pointer items-center justify-center overflow-hidden text-xs font-semibold"
+            style={{ ...estilo, zIndex: 2, background: fundoDaEra(era.cor), borderLeft: vertical ? undefined : `4px solid ${era.cor}`, borderTop: vertical ? `4px solid ${era.cor}` : undefined, writingMode: vertical ? 'vertical-rl' : undefined }}
           >
-            {larg > (vertical ? 56 : 70) && (
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap px-1" style={vertical ? { maxHeight: larg - 8 } : { maxWidth: larg - 8 }}>
-                {era.nome}
-              </span>
-            )}
+            {nome && <span className="whitespace-nowrap px-1">{nome}</span>}
           </div>
         )
       })
   }
 
-  const barras = eventos
-    .filter((e) => e.fim !== undefined && (e.regiao === 'mundo' ? mostrarMundo : mostrarBrasil))
-    .map((e) => {
-      const t = trechoVisivel(e.inicio, e.fim as number, vista, L)
-      if (!t) return null
-      const mundo = e.regiao === 'mundo'
-      const estilo: React.CSSProperties = vertical ? { top: t.a, height: t.b - t.a, width: 4, ...(mundo ? { left: bordaMundo - 7 } : { left: bordaBrasil + 3 }) } : { left: t.a, width: t.b - t.a, height: 4, ...(mundo ? { top: bordaMundo - 7 } : { top: bordaBrasil + 3 }) }
-      return <div key={`b-${e.id}`} aria-hidden="true" className="absolute rounded-full opacity-70" style={{ ...estilo, background: COR_TIPO[e.tipo] }} />
-    })
+  // duração do acontecimento selecionado, como uma barra grossa ao lado da faixa de eras
+  const escolhido = selecionado ? porId.get(selecionado) : undefined
+  const barra =
+    escolhido && escolhido.fim !== undefined && (escolhido.regiao === 'mundo' ? mostrarMundo : mostrarBrasil)
+      ? (() => {
+          const t = trechoVisivel(escolhido.inicio, escolhido.fim, vista, L)
+          if (!t) return null
+          const mundo = escolhido.regiao === 'mundo'
+          const estilo: CSSProperties = vertical ? { top: t.a, height: t.b - t.a, width: 7, ...(mundo ? { left: bordaMundo - 11 } : { left: bordaBrasil + 4 }) } : { left: t.a, width: t.b - t.a, height: 7, ...(mundo ? { top: bordaMundo - 11 } : { top: bordaBrasil + 4 }) }
+          return <div aria-hidden="true" className="absolute rounded-full" style={{ ...estilo, zIndex: 3, background: COR_TIPO[escolhido.tipo], boxShadow: '0 0 0 2px var(--surface)' }} />
+        })()
+      : null
 
+  const comprimentoGrade = vertical ? largura : altura
   return (
     <div className="grid gap-2">
       <div
@@ -253,27 +304,36 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         className="relative cursor-grab select-none overflow-hidden rounded-[var(--radius)] border border-[var(--line-strong)] bg-[var(--surface)] active:cursor-grabbing focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
         style={{ height: altura, touchAction: 'none' }}
       >
-        <div aria-hidden="true" className="absolute bg-[var(--line-strong)]" style={eixoStyle} />
+        {/* linhas de grade nos anos marcados */}
         {marcas.map((a) => (
-          <div key={a} aria-hidden="true" className="num absolute text-center text-[10.5px] text-[var(--ink-muted)]" style={vertical ? { top: p(a) - 7, left: eixo - GAP, width: GAP * 2 } : { left: p(a) - 20, width: 40, top: eixo - 8 }}>
+          <div key={`g${a}`} aria-hidden="true" className="absolute" style={{ background: 'var(--line)', opacity: a % 100 === 0 ? 1 : 0.55, ...(vertical ? { top: p(a), left: 0, width: comprimentoGrade, height: 1 } : { left: p(a), top: 0, height: comprimentoGrade, width: 1 }) }} />
+        ))}
+        <div aria-hidden="true" className="absolute bg-[var(--line-strong)]" style={{ ...eixoStyle, zIndex: 1 }} />
+        {marcas.map((a) => (
+          <div key={a} aria-hidden="true" className="num absolute z-[2] text-center text-xs font-semibold text-[var(--ink-muted)]" style={vertical ? { top: p(a) - 9, left: eixo - GAP, width: GAP * 2, background: 'var(--surface)' } : { left: p(a) - 22, width: 44, top: eixo - 9, background: 'var(--surface)', borderRadius: 4 }}>
             {a}
           </div>
         ))}
         {mostrarMundo && faixasDeEras('mundo')}
         {mostrarBrasil && faixasDeEras('brasil')}
-        {barras}
+        {barra}
         {mostrarMundo && rotulosDe('mundo')}
         {mostrarBrasil && rotulosDe('brasil')}
-        <span aria-hidden="true" className="pointer-events-none absolute text-[11px] font-bold text-[var(--ink-muted)]" style={vertical ? { top: 2, left: 6 } : { left: 6, top: 4 }}>
-          {mostrarMundo ? 'Mundo' : ''}
-        </span>
-        <span aria-hidden="true" className="pointer-events-none absolute text-[11px] font-bold text-[var(--ink-muted)]" style={vertical ? { top: 2, right: 6 } : { left: 6, bottom: 4 }}>
-          {mostrarBrasil ? 'Brasil' : ''}
-        </span>
+        {mostrarMundo && (
+          <span aria-hidden="true" className="pointer-events-none absolute z-[8] rounded-full border border-[var(--line-strong)] bg-[var(--surface)] px-2 py-0.5 text-xs font-bold" style={{ left: 8, top: 8 }}>
+            {vertical ? 'Mundo' : '↑ Mundo'}
+          </span>
+        )}
+        {mostrarBrasil && (
+          <span aria-hidden="true" className="pointer-events-none absolute z-[8] rounded-full border border-[var(--line-strong)] bg-[var(--surface)] px-2 py-0.5 text-xs font-bold" style={vertical ? { right: 8, top: 8 } : { left: 8, bottom: 8 }}>
+            {vertical ? 'Brasil' : '↓ Brasil'}
+          </span>
+        )}
       </div>
+      <Minimapa eras={eras} vista={vista} onVista={onVista} mostrarMundo={mostrarMundo} mostrarBrasil={mostrarBrasil} />
       <p className="m-0 text-sm text-[var(--ink-muted)]" aria-live="polite">
         Mostrando de {Math.round(vista.c - vista.s / 2)} a {Math.round(vista.c + vista.s / 2)}
-        {ocultos > 0 ? `. ${ocultos} acontecimento${ocultos === 1 ? '' : 's'} não cabe${ocultos === 1 ? '' : 'm'} neste zoom: aproxime para ver.` : '.'}
+        {ocultos > 0 ? `. ${ocultos} acontecimento${ocultos === 1 ? '' : 's'} não cabe${ocultos === 1 ? '' : 'm'} neste zoom: aproxime ou escolha um período para ver.` : '. Todos os acontecimentos desta janela estão visíveis.'}
       </p>
     </div>
   )

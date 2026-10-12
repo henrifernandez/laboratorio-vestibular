@@ -25,7 +25,7 @@ describe('Linha do tempo (componente)', () => {
     // um acontecimento de peso 1 de cada lado aparece na vista aberta
     expect(botoes.some((b) => b.getAttribute('aria-label')?.startsWith('Independência do Brasil'))).toBe(true)
     expect(botoes.some((b) => b.getAttribute('aria-label')?.startsWith('Primeira Guerra Mundial'))).toBe(true)
-    expect(container.querySelectorAll('[title*="Era Vargas"]').length).toBe(1)
+    expect(container.querySelectorAll('div[title^="Era Vargas"]').length).toBe(1)
     expect(container.textContent).toMatch(/não cabem? neste zoom/)
     expect(container.textContent).toContain('Mostrando de 1440 a 2030')
   })
@@ -71,8 +71,8 @@ describe('Linha do tempo (componente)', () => {
   })
   it('só o Brasil ou só o mundo: a outra faixa some', () => {
     const { container } = render(<LinhaDoTempo {...props} eventos={EVENTOS.filter((e) => e.regiao === 'brasil')} mostrarMundo={false} onVista={() => {}} onSelecionar={() => {}} />)
-    expect(container.querySelectorAll('[title*="Guerra Fria"]').length).toBe(0)
-    expect(container.querySelectorAll('[title*="Colônia"]').length).toBe(1)
+    expect(container.querySelectorAll('div[title^="Guerra Fria"]').length).toBe(0)
+    expect(container.querySelectorAll('div[title^="Colônia"]').length).toBe(1)
   })
 })
 

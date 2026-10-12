@@ -1,6 +1,6 @@
 import { Maximize2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import { ERAS, EVENTOS, PERIODOS, evento } from '@/conteudo/historia/linhaDoTempo'
-import { NOME_REGIAO, rotuloAno, type Acontecimento, type TipoEvento } from '@/conteudo/historia/tipos'
+import { rotuloAno, type Acontecimento, type TipoEvento } from '@/conteudo/historia/tipos'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { ControleDeslizante } from '@/sim/ControleDeslizante'
 import { Alternador, Cartao, Rodape, Seletor } from '@/sim/ComunsLab'
@@ -12,7 +12,7 @@ import { NOME_TIPO } from '@/conteudo/historia/tipos'
 import { VISTA_TOTAL, anoFinal, cadeia, deslocar, emCurso, eraDoAno, limitarVista, vistaParaEvento, vistaParaIntervalo, zoomEm, type NoCadeia, type Vista } from './calculo'
 import { DEFINICOES_HISTORIA } from './definicoes'
 import { LinhaDoTempo, COR_TIPO, ICONE_TIPO } from './LinhaDoTempo'
-import { EventoCard, FaixasComCursor, LadoALado } from './Visuais'
+import { EventoCard, FaixasComCursor, LadoALado, LegendaLinha, PeriodosRapidos } from './Visuais'
 
 const TIPOS: { chave: 'pol' | 'eco' | 'soc' | 'cul' | 'gue'; tipo: TipoEvento }[] = [
   { chave: 'pol', tipo: 'politico' },
@@ -40,12 +40,9 @@ function TelaLinha() {
     const nova = fora ? limitarVista({ c: x.inicio, s: vista.s }) : vista
     atualizar({ ev: id, c: nova.c, s: nova.s })
   }
-  const periodo = (id: string) => {
-    const era = ERAS.find((x) => x.id === id)
-    if (era) mudarVista(vistaParaIntervalo(era.inicio, era.fim))
-  }
   return (
     <div className="grid gap-4">
+      <LegendaLinha />
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Controles de zoom e deslocamento">
         <button type="button" className="btn" onClick={() => mudarVista(zoomEm(vista, 0.5, 0.7))}>
           <ZoomIn size={18} aria-hidden="true" /> Aproximar
@@ -64,13 +61,12 @@ function TelaLinha() {
         </button>
       </div>
       <LinhaDoTempo eventos={eventos} eras={ERAS} vista={vista} selecionado={selecionado?.id ?? null} onVista={mudarVista} onSelecionar={selecionar} mostrarMundo={reg !== 'brasil'} mostrarBrasil={reg !== 'mundo'} />
-      <p className="m-0 text-sm text-[var(--ink-muted)]">Role o mouse sobre a linha para aproximar, arraste para mover e, no celular, use dois dedos para ampliar. Clique nas faixas coloridas dos botões abaixo para ver um período inteiro.</p>
+      <PeriodosRapidos onEscolher={(i, f) => mudarVista(vistaParaIntervalo(i, f))} />
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="grid content-start gap-3">
           {selecionado ? <EventoCard ev={selecionado} onSelecionar={selecionar} onVer={(x) => mudarVista(vistaParaEvento(x))} /> : <Cartao>Escolha um acontecimento na linha do tempo para ver o contexto, as causas, as consequências e a ligação com o Brasil ou com o mundo.</Cartao>}
         </div>
         <div className="grid content-start gap-4">
-          <Seletor rotulo="Ir para o período" valor="" opcoes={[{ id: '', rotulo: 'Escolha um período…' }, ...ERAS.map((x) => ({ id: x.id, rotulo: `${NOME_REGIAO[x.regiao]}: ${x.nome} (${x.inicio}–${x.fim})` }))]} onChange={(id) => id && periodo(id)} />
           <Alternador
             rotulo="Mostrar"
             valor={reg}

@@ -30,6 +30,8 @@ export interface Acontecimento {
 export interface Era {
   id: string
   nome: string
+  /** nome curto, para faixas estreitas */
+  curto: string
   regiao: Regiao
   inicio: number
   fim: number
