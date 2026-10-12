@@ -1,7 +1,7 @@
 import { PASSOS_ELE, type VisualEle } from '@/conteudo/fisica/eletricidade'
 import { EntendaPassos, type PassoEntenda } from '@/componentes/EntendaPassos'
 import { resolver, montar } from './calculo'
-import { BarrasHor, Circuito, CircuitoSimples } from './Visuais'
+import { BarrasHor, Circuito, CircuitoSimples, LegendaCircuitoSimples } from './Visuais'
 
 const f = (n: number, c = 2) => n.toLocaleString('pt-BR', { maximumFractionDigits: c })
 
@@ -11,6 +11,7 @@ function Visual({ v }: { v: VisualEle }) {
     return (
       <div>
         <CircuitoSimples V={v.V} R={v.R} fase={0.05} brilho={Math.min(1, (v.V * i) / 40)} />
+        <LegendaCircuitoSimples />
         <p className="num text-center text-sm text-[var(--ink-muted)]">
           i = V/R = {f(v.V)}/{f(v.R)} = {f(i)} A · P = V·i = {f(v.V * i)} W
         </p>

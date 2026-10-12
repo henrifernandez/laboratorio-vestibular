@@ -11,7 +11,7 @@ import { LaboratorioTelas } from '@/sim/LaboratorioTelas'
 import { PainelDeVisibilidade } from '@/sim/PainelDeVisibilidade'
 import { consumoMensal, custo, energiaKWh, montar, queimar, req, resolver, type Aparelho, type Topologia } from './calculo'
 import { DEFINICOES_ELETRICIDADE } from './definicoes'
-import { BarrasHor, Circuito, CircuitoSimples } from './Visuais'
+import { BarrasHor, Circuito, CircuitoSimples, LegendaCircuitoSimples } from './Visuais'
 
 const fmt = (n: number, c = 2) => n.toLocaleString('pt-BR', { maximumFractionDigits: c })
 
@@ -57,6 +57,7 @@ function TelaOhm() {
     <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
       <div className="grid content-start gap-3">
         <CircuitoSimples V={e.V} R={e.R} fase={fase} brilho={Math.min(1, P / (Pmax / 4))} />
+        <LegendaCircuitoSimples />
         {e.grafico && (
           <Cena janela={{ xmin: -0.3, xmax: imax + 0.3, ymin: -2, ymax: 28 }} passoX={1} passoY={4} rotulo="Gráfico da tensão em função da corrente: a inclinação é a resistência">
             <Plot.OfX y={(x) => e.R * x} domain={[0, imax]} color="var(--accent)" weight={3} />
@@ -81,7 +82,7 @@ function TelaOhm() {
         <ControleDeslizante rotulo="Resistência da lâmpada (R)" valor={e.R} onChange={(v) => atualizar({ R: v })} min={5} max={100} passo={5} unidade="Ω" marcas={[5, 50, 100]} />
         <PainelDeVisibilidade itens={[{ id: 'grafico', rotulo: 'Gráfico V × i', ativo: e.grafico }]} onChange={(id, ativo) => atualizar({ [id]: ativo })} />
         <fieldset className="m-0 grid gap-2 rounded-[var(--radius)] border border-[var(--line)] p-3">
-          <legend className="px-1 text-sm font-semibold text-[var(--ink-muted)]">Mover as cargas</legend>
+          <legend className="px-1 text-sm font-semibold text-[var(--ink-muted)]">Mover os elétrons</legend>
           <ControlesDeTempo
             rodando={rodando}
             onAlternar={() => setRodando(!rodando)}
@@ -92,7 +93,7 @@ function TelaOhm() {
             velocidade={velocidade}
             onVelocidade={setVelocidade}
           />
-          <p className="text-sm text-[var(--ink-muted)]">As cargas andam mais depressa quando a corrente é maior.</p>
+          <p className="text-sm text-[var(--ink-muted)]">Os elétrons andam mais depressa quando a corrente é maior. (No fio real eles se arrastam devagar, a frações de milímetro por segundo; o que se propaga quase instantaneamente é o campo elétrico.)</p>
         </fieldset>
         <div className="flex flex-wrap items-center gap-2">
           <BotaoReiniciar
