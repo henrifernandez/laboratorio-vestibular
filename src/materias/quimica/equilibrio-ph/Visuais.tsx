@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
+import { espalhar, larguraTexto } from '@/lib/rotulos'
 import type { InstanciaMulti, InstanciaNum } from '@/desafios/simples'
 import { Formula } from '../comum/Formula'
 import { CadeiaBequeres } from '../solucoes/Visuais'
@@ -38,43 +39,172 @@ export interface Marcador {
   rotulo: string
 }
 
-/** Barra de pH de 0 a 14 com marcadores (substâncias do cotidiano ou o ponto em estudo). */
-export function EscalaPh({ marcadores = [], destaque }: { marcadores?: Marcador[]; destaque?: number }) {
-  const W = 340
-  const X = (p: number) => 14 + (p / 14) * (W - 28)
+const SOBRESCRITO = '⁰¹²³⁴⁵⁶⁷⁸⁹'
+/** 10 elevado a −p, com expoente sobrescrito (10⁰, 10⁻¹, ...). */
+export const potenciaDez = (p: number) => `10${p === 0 ? '⁰' : `⁻${String(p).replace(/\d/g, (d) => SOBRESCRITO[Number(d)] as string)}`}`
+
+const ROTULO_FONTE = 11.5
+const LARG_H = 340
+const MARGEM_H = 14
+
+/** Largura do rótulo de um marcador na escala horizontal (só o nome, em negrito). */
+const largHorizontal = (m: Marcador) => larguraTexto(m.rotulo, ROTULO_FONTE, true)
+
+/** Os rótulos cabem numa só linha acima da barra horizontal? */
+export function cabeNaHorizontal(marcadores: Marcador[]): boolean {
+  const total = marcadores.reduce((s, m) => s + largHorizontal(m) + 8, -8)
+  return total <= LARG_H - 2 * MARGEM_H
+}
+
+/** Posições dos rótulos na escala vertical (centro de cada linha), sem sobreposição. */
+export function layoutVertical(marcadores: Marcador[], topo: number, passo: number) {
   const ordenados = [...marcadores].sort((a, b) => a.ph - b.ph)
-  // alterna os rótulos em duas alturas para não se sobreporem
+  const ys = espalhar(
+    ordenados.map((m) => ({ alvo: topo + m.ph * passo, tamanho: 16 })),
+    topo - 12,
+    topo + 14 * passo + 12,
+    1,
+  )
+  return ordenados.map((m, i) => ({ ...m, y: ys[i] as number }))
+}
+
+/** Posições dos rótulos na escala horizontal (centro de cada rótulo), sem sobreposição. */
+export function layoutHorizontal(marcadores: Marcador[]) {
+  const ordenados = [...marcadores].sort((a, b) => a.ph - b.ph)
+  const X = (p: number) => MARGEM_H + (p / 14) * (LARG_H - 2 * MARGEM_H)
+  const xs = espalhar(
+    ordenados.map((m) => ({ alvo: X(m.ph), tamanho: largHorizontal(m) })),
+    MARGEM_H - 6,
+    LARG_H - MARGEM_H + 6,
+    8,
+  )
+  return ordenados.map((m, i) => ({ ...m, x: xs[i] as number, largura: largHorizontal(m) }))
+}
+
+const descricaoEscala = (marcadores: Marcador[], destaque?: number) =>
+  `Escala de pH de 0 a 14: ácida abaixo de 7, neutra em 7 e básica acima; cada unidade a menos multiplica [H⁺] por 10.${marcadores.length ? ` ${[...marcadores]
+    .sort((a, b) => a.ph - b.ph)
+    .map((m) => `${m.rotulo}, pH perto de ${f(m.ph, 1)}`)
+    .join('; ')}.` : ''}${destaque !== undefined ? ` Marcado: pH ${f(destaque, 1)}.` : ''}`
+
+/**
+ * Escala de pH de 0 a 14 com marcadores (substâncias do cotidiano ou o ponto em estudo).
+ * Com poucos rótulos, fica na horizontal; quando eles não cabem numa linha, vira uma régua vertical,
+ * que também mostra a concentração de H⁺ de cada unidade.
+ */
+export function EscalaPh({ marcadores = [], destaque, orientacao = 'auto' }: { marcadores?: Marcador[]; destaque?: number; orientacao?: 'auto' | 'horizontal' | 'vertical' }) {
+  const id = useId().replace(/:/g, '')
+  const vertical = orientacao === 'vertical' || (orientacao === 'auto' && !cabeNaHorizontal(marcadores))
+  return vertical ? <EscalaVertical id={id} marcadores={marcadores} destaque={destaque} /> : <EscalaHorizontal id={id} marcadores={marcadores} destaque={destaque} />
+}
+
+function EscalaHorizontal({ id, marcadores, destaque }: { id: string; marcadores: Marcador[]; destaque?: number }) {
+  const W = LARG_H
+  const X = (p: number) => MARGEM_H + (p / 14) * (W - 2 * MARGEM_H)
+  const temRotulos = marcadores.length > 0
+  const oy = temRotulos ? 0 : -30
+  const BARRA = 38 + oy
+  const rotulos = layoutHorizontal(marcadores)
   return (
-    <svg viewBox={`0 0 ${W} ${destaque !== undefined || ordenados.length ? 120 : 70}`} role="img" aria-label={`Escala de pH de 0 a 14: ácida abaixo de 7, neutra em 7 e básica acima. ${ordenados.map((m) => `${m.rotulo} perto de ${f(m.ph, 1)}`).join('; ')}`} className="mx-auto block w-full max-w-lg">
+    <svg viewBox={`0 0 ${W} ${102 + oy}`} role="img" aria-label={descricaoEscala(marcadores, destaque)} className="mx-auto block w-full max-w-lg">
       <defs>
-        <linearGradient id="grad-ph" x1="0" x2="1" y1="0" y2="0">
+        <linearGradient id={`ph-${id}`} x1="0" x2="1" y1="0" y2="0">
           {PARADAS.map(([p, c]) => (
             <stop key={p} offset={`${(p / 14) * 100}%`} stopColor={`rgb(${c.join(',')})`} />
           ))}
         </linearGradient>
       </defs>
-      <rect x={14} y={36} width={W - 28} height={22} rx={6} fill="url(#grad-ph)" stroke="var(--ink-muted)" strokeWidth={1} />
-      {Array.from({ length: 15 }, (_, p) => (
-        <g key={p}>
-          <line x1={X(p)} x2={X(p)} y1={58} y2={63} stroke="var(--ink-muted)" strokeWidth={1.2} />
-          <text x={X(p)} y={76} textAnchor="middle" fontSize={11} fill="var(--ink-muted)" className="num">{p}</text>
+      {rotulos.map((m) => (
+        <g key={m.rotulo}>
+          <path d={`M${m.x} 21 L${X(m.ph)} 30 L${X(m.ph)} ${BARRA}`} fill="none" stroke="var(--ink)" strokeWidth={1.2} />
+          <circle cx={X(m.ph)} cy={BARRA} r={3} fill="var(--ink)" stroke="var(--surface)" strokeWidth={1.2} />
+          <text x={m.x} y={15} textAnchor="middle" fontSize={ROTULO_FONTE} fontWeight={700} fill="var(--ink)">{m.rotulo}</text>
         </g>
       ))}
-      <text x={14} y={24} fontSize={11} fill="var(--ink-muted)">ácido</text>
-      <text x={X(7)} y={24} fontSize={11} textAnchor="middle" fill="var(--ink-muted)">neutro</text>
-      <text x={W - 14} y={24} fontSize={11} textAnchor="end" fill="var(--ink-muted)">básico</text>
-      {ordenados.map((m, k) => (
+      <rect x={MARGEM_H} y={BARRA} width={W - 2 * MARGEM_H} height={22} rx={6} fill={`url(#ph-${id})`} stroke="var(--ink-muted)" strokeWidth={1} />
+      <line x1={X(7)} x2={X(7)} y1={BARRA - 3} y2={BARRA + 25} stroke="var(--ink)" strokeWidth={1.4} strokeDasharray="3 2" />
+      {Array.from({ length: 15 }, (_, p) => (
+        <g key={p}>
+          <line x1={X(p)} x2={X(p)} y1={BARRA + 22} y2={BARRA + 27} stroke="var(--ink-muted)" strokeWidth={1.2} />
+          <text x={X(p)} y={BARRA + 39} textAnchor="middle" fontSize={11} fontWeight={p === 7 ? 700 : 400} fill={p === 7 ? 'var(--ink)' : 'var(--ink-muted)'} className="num">{p}</text>
+        </g>
+      ))}
+      <text x={MARGEM_H} y={BARRA + 58} fontSize={11} fill="var(--ink-muted)">← mais ácido</text>
+      <text x={X(7)} y={BARRA + 58} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--ink)">neutro</text>
+      <text x={W - MARGEM_H} y={BARRA + 58} textAnchor="end" fontSize={11} fill="var(--ink-muted)">mais básico →</text>
+      {destaque !== undefined && (
+        <g>
+          <line x1={X(destaque)} x2={X(destaque)} y1={BARRA - 2} y2={BARRA + 24} stroke="var(--ink)" strokeWidth={3} />
+          <polygon points={`${X(destaque) - 7},${BARRA + 33} ${X(destaque) + 7},${BARRA + 33} ${X(destaque)},${BARRA + 24}`} fill="var(--ink)" />
+        </g>
+      )}
+    </svg>
+  )
+}
+
+function EscalaVertical({ id, marcadores, destaque }: { id: string; marcadores: Marcador[]; destaque?: number }) {
+  const W = 330
+  const TOPO = 44
+  const PASSO = 21
+  const Y = (p: number) => TOPO + p * PASSO
+  const X_H = 58
+  const X_PH = 82
+  const BX0 = 102
+  const BX1 = 126
+  const X_ROT = 158
+  const rotulos = layoutVertical(marcadores, TOPO, PASSO)
+  const H = Y(14) + 36
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={descricaoEscala(marcadores, destaque)} className="mx-auto block w-full max-w-sm">
+      <defs>
+        <linearGradient id={`phv-${id}`} x1="0" x2="0" y1="0" y2="1">
+          {PARADAS.map(([p, c]) => (
+            <stop key={p} offset={`${(p / 14) * 100}%`} stopColor={`rgb(${c.join(',')})`} />
+          ))}
+        </linearGradient>
+      </defs>
+      {/* cabeçalhos */}
+      <text x={X_H} y={22} textAnchor="end" fontSize={11} fontWeight={700} fill="var(--ink-muted)">[H⁺]</text>
+      <text x={X_H} y={34} textAnchor="end" fontSize={10.5} fill="var(--ink-muted)">mol/L</text>
+      <text x={X_PH} y={34} textAnchor="end" fontSize={12} fontWeight={700} fill="var(--ink)">pH</text>
+      {/* chaves de ácido e básico */}
+      <g stroke="var(--ink-muted)" strokeWidth={1.4} fill="none">
+        <path d={`M16 ${Y(0)} h-4 V${Y(7) - 4} h4`} />
+        <path d={`M16 ${Y(7) + 4} h-4 V${Y(14)} h4`} />
+      </g>
+      <text x={0} y={0} transform={`translate(8 ${(Y(0) + Y(7)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--ink)">ácido</text>
+      <text x={0} y={0} transform={`translate(8 ${(Y(7) + Y(14)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--ink)">básico</text>
+      {/* barra */}
+      <rect x={BX0} y={Y(0) - 6} width={BX1 - BX0} height={Y(14) - Y(0) + 12} rx={6} fill={`url(#phv-${id})`} stroke="var(--ink-muted)" strokeWidth={1} />
+      {Array.from({ length: 15 }, (_, p) => (
+        <g key={p}>
+          <line x1={BX0 - 4} x2={BX0} y1={Y(p)} y2={Y(p)} stroke="var(--ink-muted)" strokeWidth={1.2} />
+          <text x={X_PH} y={Y(p) + 4} textAnchor="end" fontSize={11.5} fontWeight={p === 7 ? 800 : 600} fill="var(--ink)" className="num">{p}</text>
+          <text x={X_H} y={Y(p) + 4} textAnchor="end" fontSize={10.5} fill="var(--ink-muted)" className="num" aria-label={potenciaDez(p)}>
+            10
+            <tspan dy={-4.5} fontSize={8}>{p === 0 ? '0' : `−${p}`}</tspan>
+          </text>
+        </g>
+      ))}
+      <line x1={BX0 - 4} x2={BX1 + 4} y1={Y(7)} y2={Y(7)} stroke="var(--ink)" strokeWidth={1.4} strokeDasharray="3 2" />
+      {/* marcadores */}
+      {rotulos.map((m) => (
         <g key={m.rotulo}>
-          <line x1={X(m.ph)} x2={X(m.ph)} y1={k % 2 === 0 ? 86 : 100} y2={58} stroke="var(--ink)" strokeWidth={1.2} />
-          <circle cx={X(m.ph)} cy={58} r={3} fill="var(--ink)" />
-          <text x={Math.min(Math.max(X(m.ph), 36), W - 36)} y={k % 2 === 0 ? 96 : 110} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--ink)">{m.rotulo}</text>
+          <path d={`M${BX1} ${Y(m.ph)} H${BX1 + 10} L${X_ROT - 6} ${m.y} H${X_ROT - 2}`} fill="none" stroke="var(--ink)" strokeWidth={1.2} />
+          <circle cx={BX1} cy={Y(m.ph)} r={3} fill="var(--ink)" stroke="var(--surface)" strokeWidth={1.2} />
+          <text x={X_ROT} y={m.y + 4} fontSize={ROTULO_FONTE} fill="var(--ink)">
+            <tspan fontWeight={700}>{m.rotulo}</tspan>
+            <tspan fill="var(--ink-muted)" className="num">{` ≈ ${f(m.ph, 1)}`}</tspan>
+          </text>
         </g>
       ))}
       {destaque !== undefined && (
         <g>
-          <polygon points={`${X(destaque) - 7},${28} ${X(destaque) + 7},${28} ${X(destaque)},${37}`} fill="var(--ink)" />
+          <rect x={BX0 - 3} y={Y(destaque) - 4} width={BX1 - BX0 + 6} height={8} rx={3} fill="none" stroke="var(--ink)" strokeWidth={2.6} />
+          <polygon points={`${BX0 - 11},${Y(destaque) - 6} ${BX0 - 11},${Y(destaque) + 6} ${BX0 - 3},${Y(destaque)}`} fill="var(--ink)" />
         </g>
       )}
+      <text x={W - 4} y={H - 8} textAnchor="end" fontSize={10.5} fill="var(--ink-muted)">cada degrau: [H⁺] dez vezes menor</text>
     </svg>
   )
 }
@@ -222,32 +352,6 @@ export function CurvaTitulacao({ t, vb, faixa, rotuloFaixa }: PropsCurva) {
 }
 
 /* ------------------------------------------------------------------ tabela e gráficos do Entenda */
-
-export function GraficoEquilibrioDinamico() {
-  const W = 340
-  const H = 170
-  const X = (t: number) => 40 + t * 280
-  const Y = (c: number) => 138 - c * 120
-  const tau = 0.22
-  const A = (t: number) => 0.4 + 0.6 * Math.exp(-t / tau)
-  const B = (t: number) => 0.6 * (1 - Math.exp(-t / tau))
-  const pts = (fn: (t: number) => number) => Array.from({ length: 61 }, (_, i) => `${X(i / 60)},${Y(fn(i / 60))}`).join(' ')
-  const tEq = 0.55
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Concentração em função do tempo: o reagente diminui, o produto aumenta e, a partir do equilíbrio, as duas ficam constantes" className="mx-auto block w-full max-w-lg">
-      <line x1={40} x2={40} y1={12} y2={138} stroke="var(--ink-muted)" strokeWidth={1.5} />
-      <line x1={40} x2={324} y1={138} y2={138} stroke="var(--ink-muted)" strokeWidth={1.5} />
-      <line x1={X(tEq)} x2={X(tEq)} y1={12} y2={138} stroke="var(--ink-muted)" strokeDasharray="4 3" strokeWidth={1.2} />
-      <text x={X(tEq) + 4} y={24} fontSize={11} fill="var(--ink-muted)">equilíbrio</text>
-      <polyline points={pts(A)} fill="none" stroke="var(--accent)" strokeWidth={3} />
-      <polyline points={pts(B)} fill="none" stroke="var(--erro)" strokeWidth={3} />
-      <text x={X(0.85)} y={Y(A(0.85)) - 6} fontSize={12} fontWeight={700} fill="var(--accent)">reagente</text>
-      <text x={X(0.85)} y={Y(B(0.85)) + 16} fontSize={12} fontWeight={700} fill="var(--erro)">produto</text>
-      <text x={324} y={158} textAnchor="end" fontSize={11} fill="var(--ink-muted)">tempo</text>
-      <text x={4} y={10} fontSize={11} fill="var(--ink-muted)">concentração</text>
-    </svg>
-  )
-}
 
 export function TabelaIce() {
   const linhas = [

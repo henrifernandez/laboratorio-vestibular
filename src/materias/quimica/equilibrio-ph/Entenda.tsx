@@ -3,7 +3,8 @@ import { EntendaPassos, type PassoEntenda } from '@/componentes/EntendaPassos'
 import { Formula } from '../comum/Formula'
 import { BarrasEspecies } from '../estequiometria/Visuais'
 import { deslocamento, hAcidoFraco, reacaoEq } from './calculo'
-import { CurvaTitulacao, EscalaPh, GraficoEquilibrioDinamico, TabelaIce } from './Visuais'
+import { EquilibrioDinamico } from './EquilibrioDinamico'
+import { CurvaTitulacao, EscalaPh, TabelaIce } from './Visuais'
 
 const f = (n: number, c = 2) => n.toLocaleString('pt-BR', { maximumFractionDigits: c })
 
@@ -46,12 +47,7 @@ function TabelaChatelier() {
 function Visual({ v }: { v: VisualEq }) {
   switch (v.tipo) {
     case 'dinamico':
-      return (
-        <div className="grid gap-1">
-          <GraficoEquilibrioDinamico />
-          <p className="m-0 text-center text-sm text-[var(--ink-muted)]">Antes do tracejado as concentrações mudam; depois dele, ficam constantes e as duas reações continuam com a mesma velocidade.</p>
-        </div>
-      )
+      return <EquilibrioDinamico />
     case 'kc':
       return <TabelaIce />
     case 'chatelier':
@@ -76,6 +72,7 @@ function Visual({ v }: { v: VisualEq }) {
       return (
         <div className="grid gap-1">
           <EscalaPh
+            orientacao="vertical"
             marcadores={[
               { ph: 2, rotulo: 'limão' },
               { ph: 5.6, rotulo: 'chuva' },
