@@ -6,12 +6,24 @@ import { Mapa, usePaises, type Extensao, type Quadro } from '../comum/mapa'
 import { formatarCoordenada, formatarEscala, umCentimetro } from './calculo'
 import { ANTARTIDA, criarProjecao, LARGURA_MUNDO, type TipoProjecao } from './projecoes'
 
-export type RegiaoMapa = 'america-do-sul' | 'mundo'
+export type RegiaoMapa = 'america-do-sul' | 'america-do-norte' | 'europa' | 'sudeste-asiatico' | 'mundo'
 
 const EXTENSOES: Record<RegiaoMapa, Extensao> = {
   'america-do-sul': [
     [-84, -57],
     [-32, 14],
+  ],
+  'america-do-norte': [
+    [-170, 5],
+    [-50, 75],
+  ],
+  europa: [
+    [-14, 33],
+    [42, 72],
+  ],
+  'sudeste-asiatico': [
+    [92, -12],
+    [142, 28],
   ],
   mundo: [
     [-180, -58],

@@ -101,6 +101,7 @@ export const MATERIAS: MateriaInfo[] = [
       t('populacao', 'Pirâmide etária', 'Leia pirâmides, calcule razões de dependência e veja a transição demográfica.', true, 15),
       t('fusos', 'Fusos horários', 'Calcule a hora em outro lugar, a duração de voos e o fuso de cada longitude.', true, 15),
       t('mapa-desafio', 'Mapa-desafio', 'Coordenadas, escala, projeções, países e fronteiras do Brasil.', true, 15),
+      t('geopolitica', 'Geopolítica', 'Ordem mundial, organizações, blocos econômicos e estágios de integração, canais e estreitos.', true, 15),
       t('agraria', 'Geografia agrária', 'Sistemas agrícolas, curva de Lorenz e Gini da terra, produtividade, reforma agrária e fronteira agrícola.', true, 15),
     ],
   },
