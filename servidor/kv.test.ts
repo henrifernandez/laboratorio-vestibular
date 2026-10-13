@@ -50,4 +50,10 @@ describe('kvDoAmbiente', () => {
     expect(kvDoAmbiente({ KV_REST_API_URL: 'https://x', KV_REST_API_TOKEN: 't' })).not.toBeNull()
     expect(kvDoAmbiente({ UPSTASH_REDIS_REST_URL: 'https://x', UPSTASH_REDIS_REST_TOKEN: 't' })).not.toBeNull()
   })
+  it('aceita um prefixo escolhido na integração e não usa o token somente de leitura', () => {
+    expect(kvDoAmbiente({ STORAGE_REST_API_URL: 'https://x', STORAGE_REST_API_TOKEN: 't' })).not.toBeNull()
+    expect(kvDoAmbiente({ STORAGE_KV_REST_API_URL: 'https://x', STORAGE_KV_REST_API_TOKEN: 't', STORAGE_KV_REST_API_READ_ONLY_TOKEN: 'ro' })).not.toBeNull()
+    // só a URL e o token de leitura: não serve para gravar
+    expect(kvDoAmbiente({ STORAGE_KV_REST_API_URL: 'https://x', STORAGE_KV_REST_API_READ_ONLY_TOKEN: 'ro' })).toBeNull()
+  })
 })

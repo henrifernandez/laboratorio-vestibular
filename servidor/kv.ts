@@ -46,9 +46,21 @@ export function criarKvUpstash(url: string, token: string): Kv {
   }
 }
 
-/** Banco ligado pelas variáveis de ambiente da Vercel (os dois nomes que as integrações usam), ou `null` se não houver. */
+/**
+ * Banco ligado pelas variáveis de ambiente da Vercel, ou `null` se não houver. Aceita os nomes padrão (`KV_REST_API_*` e
+ * `UPSTASH_REDIS_REST_*`) e também os que a integração cria quando se escolhe um prefixo (por exemplo, `STORAGE_REST_API_URL`
+ * ou `STORAGE_KV_REST_API_URL`). O token de leitura (`*_READ_ONLY_TOKEN`) nunca é usado, pois as contas precisam gravar.
+ */
 export function kvDoAmbiente(env: Record<string, string | undefined> = process.env): Kv | null {
-  const url = env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL
-  const token = env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN
+  let url = env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL
+  let token = env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) {
+    const sufixoUrl = /_(?:KV_)?REST_API_URL$|_REDIS_REST_URL$/
+    const chaveUrl = Object.keys(env).find((k) => sufixoUrl.test(k) && env[k])
+    if (chaveUrl) {
+      url = env[chaveUrl]
+      token = env[chaveUrl.replace(/_URL$/, '_TOKEN')]
+    }
+  }
   return url && token ? criarKvUpstash(url, token) : null
 }
