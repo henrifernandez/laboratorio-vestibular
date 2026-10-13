@@ -42,6 +42,7 @@ export const MODULOS: Record<string, Carregador> = {
   'geografia/populacao': () => import('./geografia/populacao'),
   'geografia/fusos': () => import('./geografia/fusos'),
   'geografia/mapa-desafio': () => import('./geografia/mapa-desafio'),
+  'geografia/agraria': () => import('./geografia/agraria'),
   'sociologia/tres-lentes': () => import('./sociologia/tres-lentes'),
   'filosofia/pensadores': () => import('./filosofia/pensadores'),
 }
