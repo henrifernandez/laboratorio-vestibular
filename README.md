@@ -2,7 +2,7 @@
 
 Site de estudo interativo para o vestibular: cada matéria vira um laboratório em que você aprende **mexendo** nos conceitos (arrastar pontos, ajustar coeficientes, errar e ver o que muda), em vez de fazer simulados. Feito para a 1ª fase da Unicamp.
 
-Site 100% estático (Vite + React + TypeScript), sem backend e sem cadastro: o progresso fica no `localStorage` do navegador.
+Site em Vite + React + TypeScript. Funciona 100% sem conta (o progresso fica no `localStorage` do navegador). Opcionalmente, há login só com nome e senha, que guarda o progresso no servidor (funções em `api/`, ver "Contas" abaixo).
 
 ## Como rodar
 
@@ -31,7 +31,10 @@ src/
   conteudo/     textos e dados de cada tema, separados dos componentes
   materias/     um módulo por tema, carregado sob demanda (code splitting)
   paginas/      Início, Matéria, Tema, Meu progresso, Revisão mista
-  lib/          gerador aleatório com semente, localStorage seguro, tema
+  lib/          gerador aleatório com semente, localStorage seguro, tema, mescla de progresso
+  conta/        contexto de conta no navegador (entrar, sair, sincronizar o progresso)
+api/            funções da Vercel (uma por rota: eu, cadastrar, entrar, sair, progresso, excluir-conta)
+servidor/       lógica das contas (validação, senha com scrypt, rotas, cliente do Redis) e seus testes
 ```
 
 Cada tema tem quatro abas: **Entenda**, **Laboratório**, **Desafios** e **Resumo**.
@@ -45,12 +48,22 @@ Publicados (cada tema com Entenda, Laboratório, Desafios e Resumo):
 - **Química:** estequiometria, soluções, orgânica, equilíbrio e pH, cinética e química verde.
 - **Biologia:** ecologia, genética, molecular e celular.
 - **História:** linha do tempo.
-- **Geografia:** placas tectônicas, climogramas, fenômenos em ação, pirâmide etária, fusos horários e mapa-desafio.
-- **Sociologia:** três lentes (Durkheim, Weber, Marx e outros).
-- **Filosofia:** mapa dos pensadores.
+- **Geografia:** placas tectônicas, climogramas, fenômenos em ação, pirâmide etária, fusos horários, mapa-desafio, geografia agrária e geopolítica.
+- **Sociologia:** três lentes (Durkheim, Weber, Marx e outros), com desafios de ligar autores a correntes, conceitos e casos.
+- **Filosofia:** mapa dos pensadores, com correntes e desafios de ligar cada pensador à sua corrente.
 
 Próxima fase: revisão mista, painel de progresso e auditorias finais (acessibilidade, desempenho e contraste).
 
 ## Deploy
 
-Vercel, preset Vite (build `npm run build`, saída `dist`). O `vercel.json` reescreve todas as rotas para `/index.html`.
+Vercel, preset Vite (build `npm run build`, saída `dist`). O `vercel.json` reescreve as rotas do site para `/index.html` (menos `/api`) e define cabeçalhos de segurança básicos.
+
+## Contas (login com nome e senha)
+
+As funções em `api/` guardam contas e progresso num Redis (Upstash). Sem o banco, o site continua funcionando normalmente e o botão **Entrar** não aparece.
+
+1. No painel da Vercel, em **Storage** (ou Marketplace), crie um banco **Upstash for Redis** e conecte ao projeto. A integração cria as variáveis `KV_REST_API_URL` e `KV_REST_API_TOKEN` (também são aceitas `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`).
+2. Faça um novo deploy para as variáveis valerem.
+3. Opcional: defina `CODIGO_CONVITE` para exigir um código ao criar conta (útil se o endereço for divulgado em público).
+
+Como funciona: a senha é guardada com scrypt e sal aleatório; a sessão é um cookie `HttpOnly` cujo valor só existe no navegador (o banco guarda o resumo SHA-256); há limite de tentativas por endereço e por nome; os pedidos que alteram dados exigem JSON e a mesma origem do site. Não há e-mail, então não existe recuperação de senha. O progresso de cada aparelho é juntado ao da conta ao entrar (vale, por desafio, o registro com mais tentativas). A conta pode ser excluída na página **Minha conta**.

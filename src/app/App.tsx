@@ -7,6 +7,8 @@ const PaginaMateria = lazy(() => import('@/paginas/PaginaMateria'))
 const PaginaTema = lazy(() => import('@/paginas/PaginaTema'))
 const Progresso = lazy(() => import('@/paginas/Progresso'))
 const Revisao = lazy(() => import('@/paginas/Revisao'))
+const Entrar = lazy(() => import('@/paginas/Entrar'))
+const Conta = lazy(() => import('@/paginas/Conta'))
 const NaoEncontrada = lazy(() => import('@/paginas/NaoEncontrada'))
 
 export function App() {
@@ -19,6 +21,8 @@ export function App() {
           <Route path="/materia/:materia/:tema" element={<PaginaTema />} />
           <Route path="/progresso" element={<Progresso />} />
           <Route path="/revisao" element={<Revisao />} />
+          <Route path="/entrar" element={<Entrar />} />
+          <Route path="/conta" element={<Conta />} />
           <Route path="*" element={<NaoEncontrada />} />
         </Routes>
       </Suspense>

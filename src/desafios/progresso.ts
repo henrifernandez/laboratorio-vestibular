@@ -26,10 +26,15 @@ export function lerProgresso(): Progresso {
   return lerJson<Progresso>('progresso', {})
 }
 
+/** Guarda o progresso no aparelho e avisa a tela (e a sincronização com a conta). */
+export function salvarProgresso(p: Progresso): void {
+  gravarJson('progresso', p)
+  window.dispatchEvent(new Event('lv:progresso'))
+}
+
 export function registrarTentativa(id: string, correto: boolean, quando = new Date()): Progresso {
   const novo = aplicar(lerProgresso(), id, correto, quando)
-  gravarJson('progresso', novo)
-  window.dispatchEvent(new Event('lv:progresso'))
+  salvarProgresso(novo)
   return novo
 }
 

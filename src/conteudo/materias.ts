@@ -93,7 +93,7 @@ export const MATERIAS: MateriaInfo[] = [
   {
     id: 'geografia',
     nome: 'Geografia',
-    descricao: 'Mapas, climas, população e fenômenos em ação.',
+    descricao: 'Mapas, climas, população, geopolítica, agrária e fenômenos em ação.',
     temas: [
       t('placas', 'Placas tectônicas', 'Aproxime, afaste e deslize placas e veja o que se forma.', true, 12),
       t('climogramas', 'Climogramas', 'Leia, compare e monte climogramas de dez cidades.', true, 15),
