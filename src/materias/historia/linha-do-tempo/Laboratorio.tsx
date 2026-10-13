@@ -1,6 +1,6 @@
 import { Maximize2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
 import { ERAS, EVENTOS, PERIODOS, evento } from '@/conteudo/historia/linhaDoTempo'
-import { rotuloAno, type Acontecimento, type TipoEvento } from '@/conteudo/historia/tipos'
+import { formatarAno, rotuloAno, type Acontecimento, type TipoEvento } from '@/conteudo/historia/tipos'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { ControleDeslizante } from '@/sim/ControleDeslizante'
 import { Alternador, Cartao, Rodape, Seletor } from '@/sim/ComunsLab'
@@ -9,7 +9,7 @@ import { LaboratorioTelas } from '@/sim/LaboratorioTelas'
 import { PainelDeVisibilidade } from '@/sim/PainelDeVisibilidade'
 import { useAnimacao } from '@/sim/useAnimacao'
 import { NOME_TIPO } from '@/conteudo/historia/tipos'
-import { VISTA_TOTAL, anoFinal, cadeia, deslocar, emCurso, eraDoAno, limitarVista, vistaParaEvento, vistaParaIntervalo, zoomEm, type NoCadeia, type Vista } from './calculo'
+import { VISTA_MODERNA, VISTA_TOTAL, anoFinal, cadeia, deslocar, emCurso, eraDoAno, limitarVista, vistaParaEvento, vistaParaIntervalo, zoomEm, type NoCadeia, type Vista } from './calculo'
 import { DEFINICOES_HISTORIA } from './definicoes'
 import { LinhaDoTempo, COR_TIPO, ICONE_TIPO } from './LinhaDoTempo'
 import { EventoCard, FaixasComCursor, LadoALado, LegendaLinha, PeriodosRapidos } from './Visuais'
@@ -24,7 +24,7 @@ const TIPOS: { chave: 'pol' | 'eco' | 'soc' | 'cul' | 'gue'; tipo: TipoEvento }[
 
 /* ------------------------------------------------------------------ Introdução: a linha do tempo com zoom */
 
-const PADRAO_LINHA = { c: VISTA_TOTAL.c, s: VISTA_TOTAL.s, ev: '', reg: 'todos', pol: true, eco: true, soc: true, cul: true, gue: true }
+const PADRAO_LINHA = { c: VISTA_MODERNA.c, s: VISTA_MODERNA.s, ev: '', reg: 'todos', pol: true, eco: true, soc: true, cul: true, gue: true }
 
 function TelaLinha() {
   const [e, atualizar, reiniciar] = useEstadoUrl(PADRAO_LINHA)
@@ -60,10 +60,20 @@ function TelaLinha() {
           <Maximize2 size={18} aria-hidden="true" /> Ver tudo
         </button>
       </div>
-      <LinhaDoTempo eventos={eventos} eras={ERAS} vista={vista} selecionado={selecionado?.id ?? null} onVista={mudarVista} onSelecionar={selecionar} mostrarMundo={reg !== 'brasil'} mostrarBrasil={reg !== 'mundo'} />
+      <LinhaDoTempo
+        eventos={eventos}
+        eras={ERAS}
+        vista={vista}
+        selecionado={selecionado?.id ?? null}
+        onVista={mudarVista}
+        onSelecionar={selecionar}
+        mostrarMundo={reg !== 'brasil'}
+        mostrarBrasil={reg !== 'mundo'}
+        onDetalhes={() => document.getElementById('detalhes-acontecimento')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+      />
       <PeriodosRapidos onEscolher={(i, f) => mudarVista(vistaParaIntervalo(i, f))} />
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="grid content-start gap-3">
+        <div id="detalhes-acontecimento" className="grid scroll-mt-4 content-start gap-3">
           {selecionado ? <EventoCard ev={selecionado} onSelecionar={selecionar} onVer={(x) => mudarVista(vistaParaEvento(x))} /> : <Cartao>Escolha um acontecimento na linha do tempo para ver o contexto, as causas, as consequências e a ligação com o Brasil ou com o mundo.</Cartao>}
         </div>
         <div className="grid content-start gap-4">
@@ -210,8 +220,11 @@ function TelaExplorar() {
 
 /* ------------------------------------------------------------------ Laboratório: máquina do tempo */
 
-const ANO_INICIAL = 1450
-const ANO_FINAL = 2025
+/** Duas escalas para a máquina do tempo: milênios andam depressa; séculos recentes, devagar. */
+const EPOCAS = {
+  antiga: { rotulo: 'Antiguidade e Idade Média', min: -3500, max: 1500, inicial: -500, marcas: [-3000, -2000, -1000, 476, 1453], velocidade: 150, passo: 50 },
+  moderna: { rotulo: 'De 1450 até hoje', min: 1450, max: 2025, inicial: 1500, marcas: [1500, 1700, 1822, 1930, 1964, 2025], velocidade: 25, passo: 10 },
+} as const
 
 function ListaEmCurso({ titulo, itens, onSelecionar }: { titulo: string; itens: Acontecimento[]; onSelecionar: (id: string) => void }) {
   return (
@@ -235,9 +248,10 @@ function ListaEmCurso({ titulo, itens, onSelecionar }: { titulo: string; itens: 
 }
 
 function TelaMaquina() {
-  const [e, atualizar, reiniciar] = useEstadoUrl({ a: 1500, ev: '' })
-  const anim = useAnimacao(e.a - ANO_INICIAL, ANO_FINAL - ANO_INICIAL, (t) => atualizar({ a: ANO_INICIAL + t }), 25)
-  const ano = Math.min(ANO_FINAL, Math.max(ANO_INICIAL, Math.round(e.a)))
+  const [e, atualizar, reiniciar] = useEstadoUrl({ a: 1500, ev: '', ep: 'moderna' })
+  const ep = e.ep === 'antiga' ? EPOCAS.antiga : EPOCAS.moderna
+  const anim = useAnimacao(e.a - ep.min, ep.max - ep.min, (t) => atualizar({ a: ep.min + t }), ep.velocidade)
+  const ano = Math.min(ep.max, Math.max(ep.min, Math.round(e.a)))
   const em = (regiao: 'brasil' | 'mundo') => emCurso(EVENTOS.filter((x) => x.regiao === regiao), ano, 3).filter((x) => x.peso <= 2).sort((a, b) => a.inicio - b.inicio)
   const eraB = eraDoAno('brasil', ano)
   const eraM = eraDoAno('mundo', ano)
@@ -246,15 +260,15 @@ function TelaMaquina() {
     <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="grid content-start gap-3">
         <div className="cartao grid gap-2 p-3">
-          <FaixasComCursor ano={ano} />
+          <FaixasComCursor ano={ano} min={ep.min} max={ep.max} />
           <p className="m-0 text-center text-sm text-[var(--ink-muted)]">As faixas mostram as eras do mundo e do Brasil; a mais forte é a que está em curso no ano escolhido.</p>
         </div>
         <Cartao vivo>
           <p className="m-0 text-lg">
-            Ano <strong>{ano}</strong>
+            Ano <strong>{formatarAno(ano)}</strong>
           </p>
           <p className="m-0">
-            <strong>Mundo:</strong> {eraM ? `${eraM.nome} — ${eraM.resumo}` : 'antes da Idade Moderna, segundo a periodização usada aqui.'}
+            <strong>Mundo:</strong> {eraM ? `${eraM.nome} — ${eraM.resumo}` : 'antes da invenção da escrita, que os manuais usam como começo da Idade Antiga.'}
           </p>
           <p className="m-0">
             <strong>Brasil:</strong> {eraB ? `${eraB.nome} — ${eraB.resumo}` : 'ainda não havia colonização portuguesa.'}
@@ -267,9 +281,20 @@ function TelaMaquina() {
         {selecionado && <EventoCard ev={selecionado} onSelecionar={(id) => atualizar({ ev: id })} />}
       </div>
       <div className="grid content-start gap-4">
-        <ControlesDeTempo rodando={anim.rodando} onAlternar={anim.alternar} onPasso={() => anim.passo(10)} velocidade={anim.velocidade} onVelocidade={anim.setVelocidade} />
-        <ControleDeslizante rotulo="Ano" valor={ano} onChange={(x) => atualizar({ a: x })} min={ANO_INICIAL} max={ANO_FINAL} passo={1} marcas={[1500, 1700, 1822, 1930, 1964, 2025]} />
-        <p className="m-0 text-sm text-[var(--ink-muted)]">Aperte reproduzir para ver os séculos passarem: as eras mudam e os acontecimentos entram e saem da lista. O passo avança dez anos.</p>
+        <Alternador
+          rotulo="Época"
+          valor={e.ep === 'antiga' ? 'antiga' : 'moderna'}
+          opcoes={[
+            { id: 'antiga', rotulo: EPOCAS.antiga.rotulo },
+            { id: 'moderna', rotulo: EPOCAS.moderna.rotulo },
+          ]}
+          onChange={(id) => atualizar({ ep: id, a: id === 'antiga' ? EPOCAS.antiga.inicial : EPOCAS.moderna.inicial, ev: '' })}
+        />
+        <ControlesDeTempo rodando={anim.rodando} onAlternar={anim.alternar} onPasso={() => anim.passo(ep.passo)} velocidade={anim.velocidade} onVelocidade={anim.setVelocidade} />
+        <ControleDeslizante rotulo="Ano" valor={ano} onChange={(x) => atualizar({ a: x })} min={ep.min} max={ep.max} passo={1} marcas={[...ep.marcas]} formatarMarca={formatarAno} descricao="Anos negativos são antes de Cristo (a.C.)." />
+        <p className="m-0 text-sm text-[var(--ink-muted)]">
+          Aperte reproduzir para ver o tempo passar: as eras mudam e os acontecimentos entram e saem da lista. O passo avança {ep.passo} anos. No campo do ano, números negativos são antes de Cristo.
+        </p>
         <Rodape onReiniciar={reiniciar} />
       </div>
     </div>

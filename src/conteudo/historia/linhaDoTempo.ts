@@ -1,21 +1,25 @@
 import type { PareEPense, SecaoResumo } from '../tipos'
 import { F } from './fontes'
+import { EVENTOS_ANTIGOS } from './eventosAntigos'
 import { EVENTOS_BRASIL } from './eventosBrasil'
 import { EVENTOS_MUNDO } from './eventosMundo'
 import type { Acontecimento, Era, Personagem, Relacao } from './tipos'
 
-export const ANO_MIN = 1440
+/** Anos negativos são antes de Cristo. A linha começa um pouco antes da escrita (c. 3500 a.C.). */
+export const ANO_MIN = -3600
 export const ANO_MAX = 2030
-
 
 /** Períodos coloridos de cada região. As eras são contínuas: o fim de uma é o início da seguinte. */
 export const ERAS: Era[] = [
+  { id: 'me-antiga', nome: 'Idade Antiga', curto: 'Antiga', regiao: 'mundo', inicio: -3500, fim: 476, cor: '#4d7c0f', resumo: 'Da invenção da escrita à queda de Roma: Egito, Mesopotâmia, Grécia e Roma.' },
+  { id: 'me-media', nome: 'Idade Média', curto: 'Média', regiao: 'mundo', inicio: 476, fim: 1453, cor: '#155e75', resumo: 'Reinos germânicos, Igreja forte, feudalismo, expansão islâmica, Cruzadas e renascimento do comércio.' },
   { id: 'me-moderna', nome: 'Idade Moderna', curto: 'Moderna', regiao: 'mundo', inicio: 1453, fim: 1789, cor: '#92400e', resumo: 'Expansão marítima, absolutismo, mercantilismo, Reforma e Iluminismo.' },
   { id: 'me-revolucoes', nome: 'Era das Revoluções', curto: 'Revoluções', regiao: 'mundo', inicio: 1789, fim: 1870, cor: '#be123c', resumo: 'Revolução Industrial, revoluções burguesas, independências americanas e formação dos Estados nacionais.' },
   { id: 'me-imperialismo', nome: 'Imperialismo', curto: 'Imper.', regiao: 'mundo', inicio: 1870, fim: 1914, cor: '#7c3aed', resumo: 'Segunda Revolução Industrial, capital financeiro e partilha da África e da Ásia.' },
   { id: 'me-guerras', nome: 'Guerras e crise', curto: 'Guerras', regiao: 'mundo', inicio: 1914, fim: 1945, cor: '#c2410c', resumo: 'Duas guerras mundiais, Revolução Russa, crise de 1929 e totalitarismos.' },
   { id: 'me-guerra-fria', nome: 'Guerra Fria', curto: 'G. Fria', regiao: 'mundo', inicio: 1945, fim: 1991, cor: '#0369a1', resumo: 'Mundo bipolar (EUA × URSS), descolonização e corrida armamentista.' },
   { id: 'me-atual', nome: 'Mundo atual', curto: 'Atual', regiao: 'mundo', inicio: 1991, fim: 2025, cor: '#0f766e', resumo: 'Globalização, hegemonia dos EUA, terrorismo e crises financeiras.' },
+  { id: 'br-originarios', nome: 'Povos originários', curto: 'Indígenas', regiao: 'brasil', inicio: ANO_MIN, fim: 1500, cor: '#065f46', resumo: 'Antes de 1500, o território era habitado havia mais de 10 mil anos por muitos povos indígenas, de línguas e modos de vida diversos; essa história é conhecida pela arqueologia e pela tradição oral.' },
   { id: 'br-colonia', nome: 'Colônia', curto: 'Colônia', regiao: 'brasil', inicio: 1500, fim: 1822, cor: '#b45309', resumo: 'Açúcar, mineração, escravidão africana e pacto colonial.' },
   { id: 'br-imperio', nome: 'Império', curto: 'Império', regiao: 'brasil', inicio: 1822, fim: 1889, cor: '#6d28d9', resumo: 'Monarquia, café, Guerra do Paraguai e abolição da escravidão.' },
   { id: 'br-rep-velha', nome: 'República Velha', curto: 'Rep. Velha', regiao: 'brasil', inicio: 1889, fim: 1930, cor: '#0f766e', resumo: 'República oligárquica, café com leite, coronelismo e revoltas sociais.' },
@@ -39,6 +43,18 @@ export const PERIODOS: { id: string; rotulo: string; inicio: number; fim: number
 
 /** Relações de causa e consequência: `de` é causa (ou etapa anterior) de `para`. Sempre `de` começa antes de `para` (ou no mesmo ano). */
 export const RELACOES: Relacao[] = [
+  { de: 'm-escrita', para: 'm-hamurabi', texto: 'A escrita permitiu registrar as leis e torná-las públicas, como no código que Hamurábi mandou gravar em pedra.' },
+  { de: 'm-republica-romana', para: 'm-imperio-romano', texto: 'As guerras civis entre generais destruíram a República, e Otávio concentrou o poder como primeiro imperador, em 27 a.C.' },
+  { de: 'm-imperio-romano', para: 'm-cristianismo', texto: 'As estradas e a unidade do Império Romano facilitaram a viagem dos pregadores, e o cristianismo se espalhou pelas cidades do império.' },
+  { de: 'm-imperio-romano', para: 'm-queda-roma', texto: 'A crise econômica, as disputas pelo trono e a pressão dos povos germânicos enfraqueceram o império, cuja parte ocidental caiu em 476.' },
+  { de: 'm-queda-roma', para: 'm-feudalismo', texto: 'Com o fim do poder romano no Ocidente, as cidades encolheram e a vida se concentrou no campo, base da sociedade feudal.' },
+  { de: 'm-carlos-magno', para: 'm-feudalismo', texto: 'A divisão do império de Carlos Magno entre os netos (843) e as novas invasões fortaleceram os senhores locais, que passaram a defender e a governar suas terras.' },
+  { de: 'm-islamismo', para: 'm-cruzadas', texto: 'Jerusalém estava sob governo muçulmano; no século XI, o avanço dos turcos seljúcidas levou Bizâncio a pedir ajuda ao papa, que convocou a Primeira Cruzada.' },
+  { de: 'm-cruzadas', para: 'm-renascimento-comercial', texto: 'As Cruzadas ajudaram a reabrir o Mediterrâneo ao comércio europeu, que enriqueceu cidades italianas como Veneza e Gênova.' },
+  { de: 'm-renascimento-comercial', para: 'm-renascimento', texto: 'A riqueza das cidades comerciais italianas sustentou mecenas que financiaram artistas e estudiosos do Renascimento.' },
+  { de: 'm-renascimento-comercial', para: 'm-colombo', texto: 'A volta do comércio fortaleceu a burguesia e os reis, que se uniram para buscar novas rotas e riquezas no mar.' },
+  { de: 'm-renascimento', para: 'm-reforma', texto: 'O humanismo estimulou a leitura crítica dos textos, inclusive da Bíblia, e a imprensa espalhou rapidamente as críticas à Igreja.' },
+  { de: 'm-magna-carta', para: 'm-revolucoes-inglesas', texto: 'A Magna Carta foi invocada como precedente pelo Parlamento inglês, no século XVII, para limitar o poder dos reis.' },
   { de: 'm-colombo', para: 'm-tordesilhas', texto: 'A viagem de Colombo (1492) levou Portugal e Espanha a disputar as terras novas, e o Tratado de Tordesilhas (1494) dividiu a área de expansão entre os dois reinos.' },
   { de: 'm-tordesilhas', para: 'b-1500', texto: 'Com o tratado, Portugal reforçou o direito de ocupar terras a leste da linha, onde a esquadra de Cabral chegou em 1500.' },
   { de: 'm-colombo', para: 'b-trafico', texto: 'A colonização das Américas criou demanda por mão de obra em larga escala, e os europeus recorreram ao tráfico de africanos escravizados.' },
@@ -130,7 +146,7 @@ export const RELACOES: Relacao[] = [
 ]
 
 /** Acontecimentos, com as conexões completadas pelas relações de causa e consequência (nos dois sentidos). */
-export const EVENTOS: Acontecimento[] = [...EVENTOS_MUNDO, ...EVENTOS_BRASIL].map((e) => ({
+export const EVENTOS: Acontecimento[] = [...EVENTOS_ANTIGOS, ...EVENTOS_MUNDO, ...EVENTOS_BRASIL].map((e) => ({
   ...e,
   conexoes: [...new Set([...e.conexoes, ...RELACOES.filter((r) => r.de === e.id).map((r) => r.para), ...RELACOES.filter((r) => r.para === e.id).map((r) => r.de)])],
 }))
@@ -138,6 +154,15 @@ export const EVENTOS: Acontecimento[] = [...EVENTOS_MUNDO, ...EVENTOS_BRASIL].ma
 export const evento = (id: string) => EVENTOS.find((e) => e.id === id) as Acontecimento
 
 export const PERSONAGENS: Personagem[] = [
+  { id: 'p-hamurabi', nome: 'Hamurábi', feito: 'mandou gravar em pedra as leis que valiam para todo o reino babilônico', evento: 'm-hamurabi' },
+  { id: 'p-clistenes', nome: 'Clístenes', feito: 'fez as reformas que deram aos cidadãos de Atenas o poder de decidir em assembleia', evento: 'm-atenas' },
+  { id: 'p-alexandre', nome: 'Alexandre Magno', feito: 'conquistou o Império Persa e espalhou a cultura grega pelo Oriente', evento: 'm-alexandre' },
+  { id: 'p-augusto', nome: 'Otávio Augusto', feito: 'foi o primeiro imperador romano, a partir de 27 a.C.', evento: 'm-imperio-romano' },
+  { id: 'p-maome', nome: 'Maomé', feito: 'pregou o islã na Arábia e partiu de Meca para Medina em 622 (Hégira)', evento: 'm-islamismo' },
+  { id: 'p-carlos-magno', nome: 'Carlos Magno', feito: 'foi coroado imperador pelo papa no Natal do ano 800', evento: 'm-carlos-magno' },
+  { id: 'p-urbano', nome: 'Papa Urbano II', feito: 'convocou a Primeira Cruzada no Concílio de Clermont, em 1095', evento: 'm-cruzadas' },
+  { id: 'p-joao-sem-terra', nome: 'João Sem-Terra', feito: 'foi obrigado pelos barões a aceitar limites ao poder do rei, em 1215', evento: 'm-magna-carta' },
+  { id: 'p-joana', nome: "Joana d'Arc", feito: 'liderou as tropas francesas que romperam o cerco de Orléans, em 1429', evento: 'm-cem-anos' },
   { id: 'p-cabral', nome: 'Pedro Álvares Cabral', feito: 'comandou a esquadra que chegou ao litoral da Bahia em 1500', evento: 'b-1500' },
   { id: 'p-tome', nome: 'Tomé de Sousa', feito: 'foi o primeiro governador-geral e fundou Salvador, em 1549', evento: 'b-governo-geral' },
   { id: 'p-nassau', nome: 'Maurício de Nassau', feito: 'governou o Nordeste holandês e urbanizou Recife, entre 1637 e 1644', evento: 'b-holandeses' },
@@ -197,6 +222,20 @@ export const PASSOS_HISTORIA: PassoHistoria[] = [
       explicacao: 'Estar perto no tempo não basta. A relação de causa e consequência precisa ser explicada: a causa vem antes e ajuda a produzir o efeito.',
     },
     eventos: ['m-rev-francesa', 'b-familia-real', 'b-independencia'],
+  },
+  {
+    titulo: 'Antiguidade e Idade Média: as raízes',
+    texto: [
+      'A Idade Antiga começa com a escrita, por volta de 3500 a.C., na Mesopotâmia e no Egito, e vai até a queda do Império Romano do Ocidente, em 476. Dela vêm ideias que usamos até hoje: leis escritas (Hamurábi), democracia (Atenas), república, senado e direito (Roma).',
+      'A Idade Média (476–1453) começa com os reinos germânicos e a força da Igreja católica. O islamismo se expande até a Península Ibérica; o feudalismo organiza a sociedade em senhores e servos; as Cruzadas e o renascimento do comércio fazem crescer as cidades e a burguesia. A crise do século XIV, com a Peste Negra, abre caminho para a Idade Moderna. Enquanto isso, no Brasil, povos indígenas, como os da ilha de Marajó, viviam em sociedades complexas.',
+    ],
+    pare: {
+      pergunta: 'Que acontecimento os manuais usam como marco da passagem da Idade Antiga para a Idade Média?',
+      opcoes: ['A queda do Império Romano do Ocidente, em 476', 'A chegada de Colombo à América, em 1492', 'A invenção da escrita, por volta de 3500 a.C.'],
+      certa: 0,
+      explicacao: 'Em 476, o último imperador romano do Ocidente foi deposto. A escrita marca o começo da Idade Antiga, e 1453 (queda de Constantinopla) é o marco usado para o fim da Idade Média.',
+    },
+    eventos: ['m-escrita', 'm-atenas', 'm-imperio-romano', 'm-queda-roma', 'm-feudalismo', 'm-cruzadas', 'm-peste', 'b-marajoara'],
   },
   {
     titulo: 'Expansão marítima e início da colonização',
@@ -357,6 +396,19 @@ export const PASSOS_HISTORIA: PassoHistoria[] = [
 /* ------------------------------------------------------------------ aba Resumo */
 
 export const RESUMO_HISTORIA: SecaoResumo[] = [
+  {
+    titulo: 'Antiguidade e Idade Média (c. 3500 a.C.–1453)',
+    formulas: [],
+    ideias: [
+      'Idade Antiga: da escrita (c. 3500 a.C.) à queda de Roma (476). Egito dos faraós; Código de Hamurábi (c. 1750 a.C.).',
+      'Grécia: democracia ateniense direta e restrita (Clístenes, 508 a.C.); Alexandre e o helenismo. Roma: República (509–27 a.C.) e Império (27 a.C.–476).',
+      'Cristianismo: perseguido, tolerado em 313 (Edito de Milão), oficial em 380. Islã: Hégira (622) e chegada à Península Ibérica (711).',
+      'Idade Média (476–1453): feudalismo, servidão e poder da Igreja; Carlos Magno (800); Cisma do Oriente (1054); Cruzadas (1096–1291).',
+      'Baixa Idade Média: renascimento comercial e urbano, burguesia, Magna Carta (1215), Peste Negra (1347–1351), Guerra dos Cem Anos (1337–1453).',
+    ],
+    pegadinhas: ['Achar que a democracia ateniense incluía todos (mulheres, escravizados e estrangeiros eram excluídos).', 'Confundir a queda de Roma (476, Ocidente) com a queda de Constantinopla (1453, Oriente).', 'Achar que antes de 1500 o Brasil era vazio (havia muitos povos indígenas, alguns com sociedades complexas, como em Marajó).'],
+    fontes: [F.cardoso, F.funariGR, F.francoJr, F.leGoff, F.schaan],
+  },
   {
     titulo: 'Brasil Colônia (1500–1822)',
     formulas: [],

@@ -88,7 +88,7 @@ export const MATERIAS: MateriaInfo[] = [
     id: 'historia',
     nome: 'História',
     descricao: 'Linha do tempo com zoom e desafios de causa e consequência.',
-    temas: [t('linha-do-tempo', 'Linha do tempo', 'Do mundo moderno ao Brasil contemporâneo, com zoom, causas e consequências.', true, 18)],
+    temas: [t('linha-do-tempo', 'Linha do tempo', 'Da Antiguidade ao Brasil de hoje, com zoom, fichas rápidas, causas e consequências.', true, 18)],
   },
   {
     id: 'geografia',

@@ -37,7 +37,10 @@ describe('Intervalos de tempo', () => {
     expect(eraDoAno('brasil', 1944)?.id).toBe('br-vargas')
     expect(eraDoAno('mundo', 1989)?.id).toBe('me-guerra-fria')
     expect(eraDoAno('mundo', 1991)?.id).toBe('me-atual')
-    expect(eraDoAno('brasil', 1499)).toBeUndefined()
+    expect(eraDoAno('brasil', 1499)?.id).toBe('br-originarios')
+    expect(eraDoAno('mundo', 476)?.id).toBe('me-media')
+    expect(eraDoAno('mundo', 475)?.id).toBe('me-antiga')
+    expect(eraDoAno('mundo', -3501)).toBeUndefined()
     expect(eraDoAno('brasil', 2025)?.id).toBe('br-nova-rep')
     expect(eraDoAno('brasil', 2026)).toBeUndefined()
   })
@@ -166,7 +169,7 @@ describe('Posicionamento dos rótulos', () => {
     for (const c of r.colocados) expect(evento(c.id).inicio).toBeLessThan(1540)
   })
   it('a lista de eras cobre as eras usadas nos testes', () => {
-    expect(ERAS.length).toBe(13)
+    expect(ERAS.length).toBe(16)
   })
 })
 

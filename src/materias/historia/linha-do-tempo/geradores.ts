@@ -4,7 +4,7 @@ import type { Correcao, Desafio, Nivel } from '@/desafios/tipos'
 import type { InstanciaMulti } from '@/desafios/simples'
 import { criarRng, embaralhar, escolher, type Rng } from '@/lib/rng'
 import { lista, montar, type Opc } from '../../biologia/comum/auxiliares'
-import { anoFinal, distanciaAnos, sobrepoe } from './calculo'
+import { anoFinal, distanciaAnos, rotuloEra, sobrepoe } from './calculo'
 
 /* ------------------------------------------------------------------ utilidades */
 
@@ -177,14 +177,14 @@ export function gerarIntruso(rng: Rng, nivel: Nivel): InstanciaMulti<DadosIntrus
     const intruso = escolher(rng, fora)
     const opcoes: Opc[] = membros.map((m) => ({
       texto: m.titulo,
-      porque: `${nome(m)} está dentro do período «${era.nome}» (${era.inicio}–${era.fim}), então não é o intruso.`,
+      porque: `${nome(m)} está dentro do período «${era.nome}» (${rotuloEra(era)}), então não é o intruso.`,
       motivo: `${m.titulo} pertence ao período`,
     }))
-    return montar<DadosIntruso>(rng, { texto: intruso.titulo, porque: `${nome(intruso)} aconteceu ${intruso.inicio < era.inicio ? 'antes' : 'depois'} de «${era.nome}» (${era.inicio}–${era.fim}): é o intruso.` }, opcoes, {
-      enunciado: `Estes acontecimentos ${NOME_REGIAO[era.regiao]} pertencem ao período «${era.nome}» (${era.inicio}–${era.fim}), exceto um. Qual é o intruso?`,
+    return montar<DadosIntruso>(rng, { texto: intruso.titulo, porque: `${nome(intruso)} aconteceu ${intruso.inicio < era.inicio ? 'antes' : 'depois'} de «${era.nome}» (${rotuloEra(era)}): é o intruso.` }, opcoes, {
+      enunciado: `Estes acontecimentos ${NOME_REGIAO[era.regiao]} pertencem ao período «${era.nome}» (${rotuloEra(era)}), exceto um. Qual é o intruso?`,
       resolucao: `${era.resumo} Dentro do período: ${membros.map(nome).join('; ')}. Fora: ${nome(intruso)}.`,
       dicas: ['Lembre as datas que delimitam o período.', 'Procure o acontecimento cujo ano cai antes do começo ou depois do fim.', era.resumo],
-      licao: `${era.nome} (${NOME_REGIAO[era.regiao]}): ${era.inicio}–${era.fim}. ${era.resumo}`,
+      licao: `${era.nome} (${NOME_REGIAO[era.regiao]}): ${rotuloEra(era)}. ${era.resumo}`,
       dados: { era: era.id, intruso: intruso.id },
     })
   }

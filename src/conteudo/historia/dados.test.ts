@@ -1,5 +1,6 @@
 import { ANO_MAX, ANO_MIN, ERAS, EVENTOS, PASSOS_HISTORIA, PERIODOS, PERSONAGENS, RELACOES, RESUMO_HISTORIA, evento } from './linhaDoTempo'
-import { rotuloAno } from './tipos'
+import { FICHAS } from './fichas'
+import { formatarAno, rotuloAno } from './tipos'
 
 const ids = new Set(EVENTOS.map((e) => e.id))
 
@@ -34,6 +35,14 @@ describe('Acontecimentos: integridade dos dados', () => {
     expect(rotuloAno({ inicio: 1822 })).toBe('1822')
     expect(rotuloAno({ inicio: 1789, fim: 1799 })).toBe('1789–1799')
     expect(rotuloAno({ inicio: 1760, fim: 1850, aprox: true })).toBe('c. 1760–1850')
+  })
+  it('rótulo de ano antes de Cristo: "a.C." uma vez no fim, ou nos dois lados quando o intervalo cruza o ano 1', () => {
+    expect(rotuloAno({ inicio: -1750, aprox: true })).toBe('c. 1750 a.C.')
+    expect(rotuloAno({ inicio: -3100, fim: -30, aprox: true })).toBe('c. 3100–30 a.C.')
+    expect(rotuloAno({ inicio: -27, fim: 476 })).toBe('27 a.C.–476 d.C.')
+    expect(formatarAno(-508)).toBe('508 a.C.')
+    expect(formatarAno(0)).toBe('1 d.C.')
+    expect(formatarAno(1500)).toBe('1500')
   })
   it('há acontecimentos de peso 1 suficientes para o zoom mais aberto', () => {
     expect(EVENTOS.filter((e) => e.peso === 1 && e.regiao === 'brasil').length).toBeGreaterThanOrEqual(15)
@@ -109,8 +118,20 @@ describe('Datas conferidas à parte (tabela independente do conteúdo)', () => {
     'm-apartheid': 1994,
     'm-11-setembro': 2001,
     'm-crise-2008': 2008,
+    // Antiguidade e Idade Média (negativos = a.C.)
+    'm-republica-romana': -509,
+    'm-alexandre': -336,
+    'm-imperio-romano': -27,
+    'm-queda-roma': 476,
+    'm-islamismo': 622,
+    'm-carlos-magno': 800,
+    'm-cisma': 1054,
+    'm-cruzadas': 1096,
+    'm-magna-carta': 1215,
+    'm-cem-anos': 1337,
+    'm-peste': 1347,
   }
-  const FIM: Record<string, number> = { 'b-regencia': 1840, 'b-segundo-reinado': 1889, 'b-paraguai': 1870, 'b-republica-velha': 1930, 'b-era-vargas': 1945, 'b-estado-novo': 1945, 'b-ditadura': 1985, 'b-abolicao': 1888, 'm-1gm': 1918, 'm-2gm': 1945, 'm-rev-francesa': 1799, 'm-guerra-fria': 1991, 'm-independencia-eua': 1783, 'm-vietna': 1975, 'b-holandeses': 1654, 'b-canudos': 1897, 'b-primeiro-reinado': 1831 }
+  const FIM: Record<string, number> = { 'm-republica-romana': -27, 'm-alexandre': -323, 'm-imperio-romano': 476, 'm-carlos-magno': 814, 'm-cruzadas': 1291, 'm-cem-anos': 1453, 'm-peste': 1351, 'm-egito': -30, 'm-cristianismo': 380, 'b-regencia': 1840, 'b-segundo-reinado': 1889, 'b-paraguai': 1870, 'b-republica-velha': 1930, 'b-era-vargas': 1945, 'b-estado-novo': 1945, 'b-ditadura': 1985, 'b-abolicao': 1888, 'm-1gm': 1918, 'm-2gm': 1945, 'm-rev-francesa': 1799, 'm-guerra-fria': 1991, 'm-independencia-eua': 1783, 'm-vietna': 1975, 'b-holandeses': 1654, 'b-canudos': 1897, 'b-primeiro-reinado': 1831 }
   it.each(Object.entries(INICIO))('%s começa em %i', (id, ano) => {
     expect(evento(id).inicio).toBe(ano)
   })
@@ -158,6 +179,15 @@ describe('Eras', () => {
     }
     expect(ERAS.find((e) => e.id === 'me-moderna')?.inicio).toBe(1453)
     expect(ERAS.find((e) => e.id === 'br-colonia')?.inicio).toBe(1500)
+    expect(ERAS.find((e) => e.id === 'me-antiga')?.inicio).toBe(-3500)
+    expect(ERAS.find((e) => e.id === 'me-media')?.inicio).toBe(476)
+    expect(ERAS.find((e) => e.id === 'me-media')?.fim).toBe(1453)
+  })
+  it('Idade Antiga e Idade Média têm acontecimentos dos dois tipos de marco (político e cultural) e de peso 1', () => {
+    const antigos = EVENTOS.filter((e) => e.regiao === 'mundo' && e.inicio < 1453)
+    expect(antigos.length).toBeGreaterThanOrEqual(18)
+    expect(antigos.filter((e) => e.peso === 1).length).toBeGreaterThanOrEqual(3)
+    expect(new Set(antigos.map((e) => e.tipo)).size).toBeGreaterThanOrEqual(4)
   })
   it('todo acontecimento começa dentro de alguma era da sua região', () => {
     for (const e of EVENTOS) {
@@ -166,7 +196,8 @@ describe('Eras', () => {
     }
   })
   it('cada era tem pelo menos três acontecimentos começando bem no meio dela (para o desafio do intruso)', () => {
-    for (const er of ERAS) {
+    // exceção: antes de 1500, a história dos povos do Brasil é conhecida pela arqueologia, com poucas datas consagradas
+    for (const er of ERAS.filter((e) => e.id !== 'br-originarios')) {
       const dentro = EVENTOS.filter((e) => e.regiao === er.regiao && e.inicio > er.inicio && e.inicio < er.fim)
       expect(dentro.length, er.id).toBeGreaterThanOrEqual(3)
     }
@@ -234,7 +265,7 @@ describe('Personagens', () => {
 
 describe('Entenda e Resumo', () => {
   it('as etapas têm pergunta com a opção certa dentro do intervalo e acontecimentos existentes', () => {
-    expect(PASSOS_HISTORIA.length).toBe(12)
+    expect(PASSOS_HISTORIA.length).toBe(13)
     for (const p of PASSOS_HISTORIA) {
       expect(p.texto.length).toBeGreaterThanOrEqual(2)
       expect(p.pare.opcoes.length).toBe(3)
@@ -253,5 +284,48 @@ describe('Entenda e Resumo', () => {
     }
     const texto = RESUMO_HISTORIA.flatMap((s) => s.ideias).join(' ')
     for (const dado of ['1500', '1822', '1889', '1930', '1964', '1988', '1789', '1914', '1945', '1991']) expect(texto).toContain(dado)
+  })
+})
+
+describe('Fichas rápidas', () => {
+  // "1789: ...", "c. 3100 a.C.: ...", "264–146 a.C.: ..." ou "Século XIV: ..." (sem ano a conferir)
+  const anoDoMarco = (m: string): number | null => {
+    if (/^Séculos? /.test(m)) return null
+    const r = /^(?:c\. )?(\d{1,4})(?:–\d{1,4})?( a\.C\.)?: \S/.exec(m)
+    expect(r, `marco sem data no começo: ${m}`).not.toBeNull()
+    const n = Number((r as RegExpExecArray)[1])
+    return (r as RegExpExecArray)[2] ? -n : n
+  }
+  it('todo acontecimento tem ficha, e toda ficha é de um acontecimento', () => {
+    for (const e of EVENTOS) expect(FICHAS[e.id], e.id).toBeDefined()
+    for (const id of Object.keys(FICHAS)) expect(ids.has(id), id).toBe(true)
+  })
+  it('são sucintas: gatilho curto, de 1 a 5 marcos e pelo menos uma pessoa ou grupo; sem citações entre aspas', () => {
+    for (const [id, f] of Object.entries(FICHAS)) {
+      if (f.gatilho) expect(f.gatilho.length, id).toBeLessThanOrEqual(140)
+      expect(f.marcos.length, id).toBeGreaterThanOrEqual(1)
+      expect(f.marcos.length, id).toBeLessThanOrEqual(5)
+      expect(f.pessoas.length, id).toBeGreaterThanOrEqual(1)
+      for (const t of [f.gatilho ?? '', ...f.marcos, ...f.pessoas]) {
+        expect(t.length, `${id}: ${t}`).toBeLessThanOrEqual(120)
+        expect(t, `${id}: ${t}`).not.toMatch(/["“”«»]/)
+      }
+    }
+  })
+  it('os marcos estão em ordem e perto do acontecimento (até 100 anos antes do início ou depois do fim)', () => {
+    for (const e of EVENTOS) {
+      const anos = (FICHAS[e.id]?.marcos ?? []).map(anoDoMarco).filter((a): a is number => a !== null)
+      anos.forEach((a, i) => {
+        if (i > 0) expect(a, `${e.id}: ordem`).toBeGreaterThanOrEqual(anos[i - 1] as number)
+        expect(a, `${e.id}: ${a}`).toBeGreaterThanOrEqual(e.inicio - 100)
+        expect(a, `${e.id}: ${a}`).toBeLessThanOrEqual((e.fim ?? e.inicio) + 100)
+      })
+    }
+  })
+  it('acontecimentos de data exata têm um marco no próprio ano de início', () => {
+    for (const e of EVENTOS.filter((x) => !x.aprox && x.fim === undefined)) {
+      const anos = (FICHAS[e.id]?.marcos ?? []).map(anoDoMarco)
+      expect(anos, e.id).toContain(e.inicio)
+    }
   })
 })

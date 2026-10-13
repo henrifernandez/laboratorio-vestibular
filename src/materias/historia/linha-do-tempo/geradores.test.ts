@@ -3,6 +3,7 @@ import { corrigirMulti } from '@/desafios/simples'
 import { NIVEIS, SEMENTES, checarMulti, textoCerto } from '../../biologia/comum/checagens'
 import { rngTeste } from '../../biologia/comum/checagens'
 import { desafioCadeia, desafioOrdem, desafioQuem, gerarCausa, gerarIntruso, gerarLado, sortearConjuntoOrdenavel, type DadosCausa, type DadosIntruso, type DadosLado, type InstanciaLigar } from './geradores'
+import { rotuloEra } from './calculo'
 
 const porTitulo = (t: string) => EVENTOS.find((e) => e.titulo === t)!
 const fimDe = (e: { inicio: number; fim?: number }) => e.fim ?? e.inicio
@@ -119,9 +120,11 @@ describe('Intruso', () => {
           expect(m.inicio).toBeGreaterThan(era.inicio)
           expect(m.inicio).toBeLessThan(era.fim)
         }
-        expect(inst.enunciado).toContain(`${era.inicio}–${era.fim}`)
+        expect(inst.enunciado).toContain(rotuloEra(era))
       }
-    expect(eras.size).toBe(ERAS.length)
+    // todas as eras com acontecimentos suficientes aparecem; a dos povos originários (só arqueologia, poucos fatos datados) fica de fora
+    expect(eras.size).toBe(ERAS.length - 1)
+    expect(eras.has('br-originarios')).toBe(false)
   })
 })
 
@@ -263,6 +266,6 @@ describe('Quem fez o quê', () => {
   })
   it('cada feito, em um sorteio qualquer, tem o ano ou o contexto do acontecimento ligado (para a resolução)', () => {
     const inst = desafioQuem.gerar(7, 2)
-    for (const p of PERSONAGENS.filter((x) => inst.esquerda.some((e) => e.id === x.id))) expect(inst.porque[p.id]).toContain(String(evento(p.evento).inicio))
+    for (const p of PERSONAGENS.filter((x) => inst.esquerda.some((e) => e.id === x.id))) expect(inst.porque[p.id]).toContain(String(Math.abs(evento(p.evento).inicio)))
   })
 })

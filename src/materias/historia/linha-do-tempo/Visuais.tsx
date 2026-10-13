@@ -1,16 +1,12 @@
 import { useState } from 'react'
 import { ArrowDown, ArrowUp, CheckCircle2, GripVertical, XCircle } from 'lucide-react'
 import { ERAS, evento } from '@/conteudo/historia/linhaDoTempo'
-import { NOME_REGIAO, NOME_TIPO, rotuloAno, type Acontecimento } from '@/conteudo/historia/tipos'
+import { NOME_REGIAO, NOME_TIPO, formatarAno, rotuloAno, type Acontecimento } from '@/conteudo/historia/tipos'
 import type { EntradaProps } from '@/desafios/PainelDesafio'
-import { eraDoAno } from './calculo'
+import { eraDoAno, passoDoEixo, rotuloEra } from './calculo'
+import { primeiraFrase } from './FichaRapida'
 import type { InstanciaLigar, InstanciaOrdem } from './geradores'
 import { COR_TIPO, ICONE_TIPO, fundoDaEra } from './LinhaDoTempo'
-
-const primeiraFrase = (t: string) => {
-  const i = t.indexOf('. ')
-  return i > 0 ? t.slice(0, i + 1) : t
-}
 
 /* ------------------------------------------------------------------ card do acontecimento */
 
@@ -257,10 +253,13 @@ export function LadoALado({ eventos, selecionado, onSelecionar }: { eventos: Aco
 
 /* ------------------------------------------------------------------ máquina do tempo: faixas de eras com um cursor */
 
-export function FaixasComCursor({ ano }: { ano: number }) {
-  const MIN = 1450
-  const MAX = 2025
+export function FaixasComCursor({ ano, min = 1450, max = 2025 }: { ano: number; min?: number; max?: number }) {
+  const MIN = min
+  const MAX = max
   const X = (a: number) => 14 + ((a - MIN) / (MAX - MIN)) * 312
+  const passo = passoDoEixo(MAX - MIN)
+  const marcas: number[] = []
+  for (let a = Math.ceil(MIN / passo) * passo; a <= MAX; a += passo) if (a !== 0) marcas.push(a)
   const faixa = (regiao: 'mundo' | 'brasil', y: number, titulo: string) => (
     <g>
       <text x={14} y={y - 4} fontSize={10.5} fontWeight={700} fill="var(--ink-muted)">
@@ -269,7 +268,7 @@ export function FaixasComCursor({ ano }: { ano: number }) {
       {ERAS.filter((e) => e.regiao === regiao).map((e) => {
         const a = X(Math.max(e.inicio, MIN))
         const b = X(Math.min(e.fim, MAX))
-        const ativa = ano >= e.inicio && (ano < e.fim || e.fim === MAX)
+        const ativa = eraDoAno(regiao, ano)?.id === e.id
         return (
           <g key={e.id}>
             <rect x={a} y={y} width={Math.max(0, b - a - 1)} height={20} fill={e.cor} fillOpacity={ativa ? 0.85 : 0.25} stroke={e.cor} strokeWidth={ativa ? 2 : 1} />
@@ -281,14 +280,14 @@ export function FaixasComCursor({ ano }: { ano: number }) {
   const ativaM = eraDoAno('mundo', ano)
   const ativaB = eraDoAno('brasil', ano)
   return (
-    <svg viewBox="0 0 340 112" role="img" aria-label={`Ano ${ano}. Mundo: ${ativaM?.nome ?? 'antes das eras mostradas'}. Brasil: ${ativaB?.nome ?? 'antes da chegada dos portugueses'}.`} className="mx-auto block w-full max-w-xl">
+    <svg viewBox="0 0 340 112" role="img" aria-label={`Ano ${formatarAno(ano)}${ano < 0 ? '' : '.'} Mundo: ${ativaM?.nome ?? 'antes da escrita'}. Brasil: ${ativaB?.nome ?? 'antes das eras mostradas'}.`} className="mx-auto block w-full max-w-xl">
       {faixa('mundo', 22, 'Mundo')}
       {faixa('brasil', 66, 'Brasil')}
       <line x1={X(ano)} x2={X(ano)} y1={10} y2={92} stroke="var(--ink)" strokeWidth={2} />
       <polygon points={`${X(ano) - 5},8 ${X(ano) + 5},8 ${X(ano)},15`} fill="var(--ink)" />
-      {[1500, 1600, 1700, 1800, 1900, 2000].map((a) => (
+      {marcas.map((a) => (
         <text key={a} x={X(a)} y={106} textAnchor="middle" fontSize={10} fill="var(--ink-muted)" className="num">
-          {a}
+          {formatarAno(a)}
         </text>
       ))}
     </svg>
@@ -314,7 +313,10 @@ export function LegendaLinha() {
           <strong>Ponto + haste:</strong> o ponto marca o ano em que o acontecimento <em>começou</em> e a haste o liga ao cartão com o ano e o nome. A borda esquerda do cartão tem a cor da era.
         </li>
         <li>
-          <strong>Acontecimentos que duram anos:</strong> o cartão mostra o intervalo (por exemplo, 1789–1799). Ao clicar nele, uma barra grossa ao lado da faixa mostra a duração. “c.” quer dizer “por volta de”.
+          <strong>Clique num acontecimento</strong> para abrir a ficha rápida: o que foi, o gatilho, os marcos e as pessoas. Causas, consequências e relações ficam no card completo, embaixo.
+        </li>
+        <li>
+          <strong>Acontecimentos que duram anos:</strong> o cartão mostra o intervalo (por exemplo, 1789–1799), e uma barra grossa ao lado da faixa mostra a duração. “c.” quer dizer “por volta de”; “a.C.”, antes de Cristo.
         </li>
         <li className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <strong>Ícones, o tipo de acontecimento:</strong>
@@ -326,7 +328,7 @@ export function LegendaLinha() {
           ))}
         </li>
         <li>
-          <strong>Zoom e deslocamento:</strong> roda do mouse, dois dedos ou os botões; arraste para mover. O resumo, logo abaixo da linha, mostra onde você está em todo o período.
+          <strong>Andar e aproximar:</strong> arraste a linha ou role a roda do mouse para andar no tempo; Ctrl + roda, pinça com dois dedos ou os botões aproximam e afastam. O resumo, logo abaixo da linha, mostra onde você está, da Antiguidade até hoje.
         </li>
         <li>Cartões que não cabem na tela aparecem quando você aproxima: os mais importantes aparecem primeiro.</li>
       </ul>
@@ -342,7 +344,7 @@ export function PeriodosRapidos({ onEscolher }: { onEscolher: (inicio: number, f
       <div className="flex flex-wrap gap-2">
         {ERAS.filter((e) => e.regiao === regiao).map((e) => (
           <button key={e.id} type="button" className="btn text-sm" style={{ borderLeft: `6px solid ${e.cor}`, background: fundoDaEra(e.cor) }} onClick={() => onEscolher(e.inicio, e.fim)} title={e.resumo}>
-            {e.nome} <span className="num text-[var(--ink-muted)]">{e.inicio}–{e.fim}</span>
+            {e.nome} <span className="num text-[var(--ink-muted)]">{rotuloEra(e)}</span>
           </button>
         ))}
       </div>

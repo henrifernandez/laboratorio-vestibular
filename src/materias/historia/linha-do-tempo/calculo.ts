@@ -1,5 +1,5 @@
 import { ANO_MAX, ANO_MIN, ERAS, RELACOES, evento } from '@/conteudo/historia/linhaDoTempo'
-import type { Acontecimento, Era, Regiao, Relacao } from '@/conteudo/historia/tipos'
+import { rotuloAno, type Acontecimento, type Era, type Regiao, type Relacao } from '@/conteudo/historia/tipos'
 
 /* ======================================================================
    Funções puras da linha do tempo: tempo, zoom e posicionamento dos rótulos.
@@ -21,6 +21,9 @@ export function eraDoAno(regiao: Regiao, ano: number, eras: Era[] = ERAS): Era |
   return da.find((e) => ano >= e.inicio && ano < e.fim) ?? (ultima && ano === ultima.fim ? ultima : undefined)
 }
 
+/** Período de uma era por escrito: "1822–1889", "c. 3500 a.C.–476 d.C." ou "antes de 1500" (era que começa na ponta da linha). */
+export const rotuloEra = (e: Pick<Era, 'inicio' | 'fim'>): string => (e.inicio <= ANO_MIN ? `antes de ${e.fim}` : rotuloAno({ inicio: e.inicio, fim: e.fim, aprox: e.inicio < 0 }))
+
 /** Acontecimentos em curso em um ano (ou que começaram até `folga` anos antes, para mostrar o que acabou de acontecer). */
 export function emCurso(eventos: Acontecimento[], ano: number, folga = 0): Acontecimento[] {
   return eventos.filter((e) => (e.fim === undefined ? ano >= e.inicio && ano <= e.inicio + folga : ano >= e.inicio && ano <= e.fim + folga))
@@ -39,6 +42,9 @@ export interface Vista {
 }
 
 export const VISTA_TOTAL: Vista = { c: (ANO_MIN + ANO_MAX) / 2, s: ANO_MAX - ANO_MIN }
+
+/** Vista inicial: de 1440 a 2030, onde estão a maior parte dos acontecimentos e a história do Brasil. */
+export const VISTA_MODERNA: Vista = { c: 1735, s: 590 }
 
 const limitar = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x))
 const arred = (x: number) => Math.round(x * 100) / 100
@@ -63,6 +69,12 @@ export function zoomEm(v: Vista, ancora: number, fator: number): Vista {
 /** Desloca a vista (positivo = para o futuro). */
 export const deslocar = (v: Vista, anos: number): Vista => limitarVista({ c: v.c + anos, s: v.s })
 
+/**
+ * Deslocamento pela roda do mouse ou pelo trackpad: `pixels` de rolagem viram anos na escala atual,
+ * de modo que o conteúdo anda junto com o gesto (positivo = para o futuro).
+ */
+export const deslocarPorPixels = (v: Vista, pixels: number, L: number): Vista => deslocar(v, (pixels / Math.max(1, L)) * v.s)
+
 /** Vista que mostra bem um intervalo, com uma folga nas pontas. */
 export function vistaParaIntervalo(inicio: number, fim: number, folga = 0.12): Vista {
   const s = Math.max(EXTENSAO_MIN, (fim - inicio) * (1 + 2 * folga))
@@ -83,9 +95,9 @@ export const anoDaPosicao = (pos: number, v: Vista, L: number) => v.c - v.s / 2 
 
 /** Passo "redondo" entre marcas do eixo, para ter de 3 a 8 marcas na tela. */
 export function passoDoEixo(extensao: number): number {
-  const candidatos = [1, 2, 5, 10, 20, 25, 50, 100, 200]
+  const candidatos = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]
   const alvo = extensao / 6
-  return candidatos.find((c) => c >= alvo) ?? 200
+  return candidatos.find((c) => c >= alvo) ?? 1000
 }
 
 /** Anos que recebem marca no eixo dentro da vista. */

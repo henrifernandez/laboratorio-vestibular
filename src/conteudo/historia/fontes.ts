@@ -28,4 +28,10 @@ export const F = {
   ai5: 'Ato Institucional nº 5, de 13 de dezembro de 1968.',
   bolsaFamilia: 'Medida Provisória nº 132, de 2003, e Lei nº 10.836, de 2004 (Bolsa Família).',
   cartaOnu: 'Carta das Nações Unidas, 1945.',
+  cardoso: 'CARDOSO, Ciro Flamarion. Antiguidade oriental: política e religião. São Paulo: Contexto.',
+  funariGR: 'FUNARI, Pedro Paulo. Grécia e Roma. São Paulo: Contexto.',
+  francoJr: 'FRANCO JÚNIOR, Hilário. A Idade Média: nascimento do Ocidente. São Paulo: Brasiliense.',
+  leGoff: 'LE GOFF, Jacques. A civilização do Ocidente medieval. Petrópolis: Vozes.',
+  funariNoelli: 'FUNARI, Pedro Paulo; NOELLI, Francisco Silva. Pré-história do Brasil. São Paulo: Contexto, 2002.',
+  schaan: 'SCHAAN, Denise Pahl. Cultura marajoara. Rio de Janeiro: Senac Nacional, 2009.',
 } as const

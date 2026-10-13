@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { ERAS, EVENTOS, evento } from '@/conteudo/historia/linhaDoTempo'
@@ -6,7 +7,7 @@ import Entenda from './Entenda'
 import Laboratorio from './Laboratorio'
 import { LinhaDoTempo } from './LinhaDoTempo'
 import Resumo from './Resumo'
-import { VISTA_TOTAL } from './calculo'
+import { VISTA_MODERNA, VISTA_TOTAL } from './calculo'
 import { EventoCard, EntradaLigar, EntradaOrdenar, FaixaCronologica, FaixasComCursor, LadoALado } from './Visuais'
 import { desafioCadeia, desafioOrdem } from './geradores'
 
@@ -16,7 +17,7 @@ const texto = () => document.body.textContent as string
 const botoesDoEixo = (c: HTMLElement) => [...c.querySelectorAll('div[role="group"][aria-label^="Linha do tempo"] button')]
 
 describe('Linha do tempo (componente)', () => {
-  const props = { eventos: EVENTOS, eras: ERAS, vista: VISTA_TOTAL, selecionado: null, mostrarMundo: true, mostrarBrasil: true }
+  const props = { eventos: EVENTOS, eras: ERAS, vista: VISTA_MODERNA, selecionado: null, mostrarMundo: true, mostrarBrasil: true }
   it('mostra os acontecimentos mais importantes, uma faixa por era e o texto de quantos não cabem', () => {
     const { container } = render(<LinhaDoTempo {...props} onVista={() => {}} onSelecionar={() => {}} />)
     const botoes = botoesDoEixo(container)
@@ -28,6 +29,15 @@ describe('Linha do tempo (componente)', () => {
     expect(container.querySelectorAll('div[title^="Era Vargas"]').length).toBe(1)
     expect(container.textContent).toMatch(/não cabem? neste zoom/)
     expect(container.textContent).toContain('Mostrando de 1440 a 2030')
+  })
+  it('vista completa: da Antiguidade até hoje, com as eras antigas e anos antes de Cristo', () => {
+    const { container } = render(<LinhaDoTempo {...props} vista={VISTA_TOTAL} onVista={() => {}} onSelecionar={() => {}} />)
+    const nomes = botoesDoEixo(container).map((b) => b.getAttribute('aria-label') as string)
+    expect(nomes.some((n) => n.startsWith('Invenção da escrita'))).toBe(true)
+    expect(container.querySelectorAll('div[title^="Idade Antiga"]').length).toBe(1)
+    expect(container.querySelectorAll('div[title^="Idade Média"]').length).toBe(1)
+    expect(container.textContent).toContain('3000 a.C.')
+    expect(container.textContent).toContain('Mostrando de 3600 a.C. a 2030')
   })
   it('ao aproximar numa janela curta, todos os acontecimentos do período aparecem', () => {
     const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1925, s: 20 }} onVista={() => {}} onSelecionar={() => {}} />)
@@ -45,6 +55,51 @@ describe('Linha do tempo (componente)', () => {
     const marcado = botoesDoEixo(container).find((x) => x.getAttribute('aria-pressed') === 'true')
     expect(marcado?.getAttribute('aria-label')).toContain('Independência do Brasil')
   })
+  it('clicar abre a ficha rápida (o que foi, gatilho, marcos e pessoas); Esc e o X fecham; o botão leva aos detalhes', () => {
+    const detalhes = vi.fn()
+    const Teste = () => {
+      const [sel, setSel] = useState<string | null>(null)
+      return <LinhaDoTempo {...props} selecionado={sel} onVista={() => {}} onSelecionar={setSel} onDetalhes={detalhes} />
+    }
+    const { container } = render(<Teste />)
+    const abrir = () => fireEvent.click(botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.startsWith('Revolução Francesa')) as HTMLElement)
+    abrir()
+    const ficha = screen.getByRole('dialog', { name: 'Revolução Francesa' })
+    expect(ficha.textContent).toContain('Gatilho')
+    expect(ficha.textContent).toContain('Estados Gerais')
+    expect(ficha.textContent).toContain('1789: queda da Bastilha')
+    expect(ficha.textContent).toContain('Robespierre')
+    expect(document.activeElement).toBe(ficha)
+    fireEvent.click(within(ficha).getByRole('button', { name: /Causas, consequências e relações/ }))
+    expect(detalhes).toHaveBeenCalledWith('m-rev-francesa')
+    fireEvent.keyDown(ficha, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    abrir()
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar a ficha' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+  it('processo longo, sem gatilho único: a ficha mostra marcos e pessoas, sem o bloco de gatilho', () => {
+    const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1800, s: 120 }} selecionado="m-rev-industrial" onVista={() => {}} onSelecionar={() => {}} />)
+    fireEvent.click(botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.startsWith('Revolução Industrial')) as HTMLElement)
+    const ficha = screen.getByRole('dialog', { name: 'Revolução Industrial' })
+    expect(ficha.textContent).not.toContain('Gatilho')
+    expect(ficha.textContent).toContain('Marcos')
+    expect(ficha.textContent).toContain('James Watt')
+  })
+  it('arrastar começando em cima de um cartão anda no tempo e não seleciona o cartão', () => {
+    const onVista = vi.fn()
+    const escolher = vi.fn()
+    const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={escolher} />)
+    const grupo = container.querySelector('div[role="group"]') as HTMLElement
+    const cartao = botoesDoEixo(container)[0] as HTMLElement
+    fireEvent.pointerDown(cartao, { pointerId: 1, clientX: 300, clientY: 100, button: 0, pointerType: 'mouse' })
+    fireEvent.pointerMove(grupo, { pointerId: 1, clientX: 210, clientY: 100, pointerType: 'mouse' })
+    fireEvent.pointerUp(grupo, { pointerId: 1, clientX: 210, clientY: 100, pointerType: 'mouse' })
+    fireEvent.click(cartao)
+    // arrastar para a esquerda leva para o futuro
+    expect(onVista.mock.calls.at(-1)?.[0].c).toBeGreaterThan(1800)
+    expect(escolher).not.toHaveBeenCalled()
+  })
   it('teclado: + aproxima, − afasta, setas movem e Home mostra tudo', () => {
     const onVista = vi.fn()
     const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
@@ -60,14 +115,29 @@ describe('Linha do tempo (componente)', () => {
     fireEvent.keyDown(grupo, { key: 'Home' })
     expect(onVista.mock.calls.at(-1)?.[0]).toEqual(VISTA_TOTAL)
   })
-  it('roda do mouse: rolar para baixo afasta; para cima aproxima; o ano sob o cursor é mantido', () => {
+  it('roda do mouse: anda no tempo (para baixo = futuro); com Ctrl, aproxima e afasta', () => {
     const onVista = vi.fn()
-    const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
+    const { container, rerender } = render(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
     const grupo = container.querySelector('div[role="group"]') as HTMLElement
-    fireEvent.wheel(grupo, { deltaY: 100, clientX: 0 })
+    fireEvent.wheel(grupo, { deltaY: 90 })
+    expect(onVista.mock.calls.at(-1)?.[0]).toEqual({ c: 1820, s: 200 }) // 90 px de 900 = 10% de 200 anos
+    rerender(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
+    fireEvent.wheel(grupo, { deltaX: -90, deltaY: 5 })
+    expect(onVista.mock.calls.at(-1)?.[0].c).toBeLessThan(1800)
+    rerender(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
+    fireEvent.wheel(grupo, { deltaY: 100, ctrlKey: true, clientX: 0 })
     expect(onVista.mock.calls.at(-1)?.[0].s).toBeGreaterThan(200)
-    fireEvent.wheel(grupo, { deltaY: -100, clientX: 0 })
+    rerender(<LinhaDoTempo {...props} vista={{ c: 1800, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
+    fireEvent.wheel(grupo, { deltaY: -100, ctrlKey: true, clientX: 0 })
     expect(onVista.mock.calls.at(-1)?.[0].s).toBeLessThan(200)
+  })
+  it('na ponta da linha, a roda não prende a página', () => {
+    const onVista = vi.fn()
+    const { container } = render(<LinhaDoTempo {...props} vista={{ c: 2030 - 100, s: 200 }} onVista={onVista} onSelecionar={() => {}} />)
+    const grupo = container.querySelector('div[role="group"]') as HTMLElement
+    const naoPrendeu = fireEvent.wheel(grupo, { deltaY: 100 })
+    expect(naoPrendeu).toBe(true)
+    expect(onVista).not.toHaveBeenCalled()
   })
   it('só o Brasil ou só o mundo: a outra faixa some', () => {
     const { container } = render(<LinhaDoTempo {...props} eventos={EVENTOS.filter((e) => e.regiao === 'brasil')} mostrarMundo={false} onVista={() => {}} onSelecionar={() => {}} />)
@@ -108,7 +178,10 @@ describe('Visuais da História', () => {
     const { container } = render(<FaixasComCursor ano={1822} />)
     expect(container.querySelector('svg')?.getAttribute('aria-label')).toBe('Ano 1822. Mundo: Era das Revoluções. Brasil: Império.')
     const antes = render(<FaixasComCursor ano={1460} />)
-    expect(antes.container.querySelector('svg')?.getAttribute('aria-label')).toContain('antes da chegada dos portugueses')
+    expect(antes.container.querySelector('svg')?.getAttribute('aria-label')).toContain('Brasil: Povos originários')
+    const antiga = render(<FaixasComCursor ano={-500} min={-3500} max={1500} />)
+    expect(antiga.container.querySelector('svg')?.getAttribute('aria-label')).toBe('Ano 500 a.C. Mundo: Idade Antiga. Brasil: Povos originários.')
+    expect(antiga.container.textContent).toContain('3000 a.C.')
   })
 })
 
@@ -169,19 +242,20 @@ describe('Desafios: entradas', () => {
 })
 
 describe('Abas do tema', () => {
-  it('Entenda: as 12 etapas renderizam, cada uma com “pare e pense” e a faixa cronológica', () => {
+  it('Entenda: as 13 etapas renderizam, cada uma com “pare e pense” e a faixa cronológica', () => {
     const { container } = noRouter(<Entenda />)
-    for (let i = 1; i <= 12; i++) {
-      expect(screen.getByText(`Etapa ${i} de 12`)).toBeInTheDocument()
+    for (let i = 1; i <= 13; i++) {
+      expect(screen.getByText(`Etapa ${i} de 13`)).toBeInTheDocument()
       expect(screen.getByText('Pare e pense')).toBeInTheDocument()
       expect(container.querySelectorAll('ol[aria-label^="Acontecimentos da etapa"] li').length).toBeGreaterThanOrEqual(3)
-      if (i < 12) fireEvent.click(screen.getByRole('button', { name: /Próxima/ }))
+      if (i < 13) fireEvent.click(screen.getByRole('button', { name: /Próxima/ }))
     }
   })
-  it('Resumo: sete seções, cada uma com as fontes', () => {
+  it('Resumo: oito seções, da Antiguidade até hoje, cada uma com as fontes', () => {
     const { container } = noRouter(<Resumo />)
-    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(7)
-    expect(container.textContent?.match(/Fontes:/g)?.length).toBe(7)
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(8)
+    expect(container.textContent?.match(/Fontes:/g)?.length).toBe(8)
+    expect(container.textContent).toContain('Antiguidade e Idade Média')
   })
 })
 
@@ -216,6 +290,10 @@ describe('Laboratório', () => {
     fireEvent.click(screen.getByRole('button', { name: /Aproximar/ }))
     expect(texto()).toContain('Mostrando de 1730 a 1870')
     fireEvent.click(screen.getByRole('button', { name: /Ver tudo/ }))
+    expect(texto()).toContain('Mostrando de 3600 a.C. a 2030')
+  })
+  it('Introdução: abre na época moderna (1440–2030)', () => {
+    noRouter(<Laboratorio />, '/?tela=intro')
     expect(texto()).toContain('Mostrando de 1440 a 2030')
   })
   it('Explorar (lado a lado): de 1930 a 1945 aparecem a Era Vargas e a Segunda Guerra, em colunas separadas', () => {
@@ -261,10 +339,16 @@ describe('Laboratório', () => {
   })
   it('Laboratório (máquina do tempo): antes de 1500 não há colonização; em 1945, Guerra Fria e República de 1946', () => {
     noRouter(<Laboratorio />, '/?tela=lab&a=1460')
-    expect(texto()).toContain('ainda não havia colonização portuguesa')
+    expect(texto()).toContain('Brasil: Povos originários')
     const r = noRouter(<Laboratorio />, '/?tela=lab&a=1945')
     expect(r.container.textContent).toContain('Mundo: Guerra Fria')
     expect(r.container.textContent).toContain('Brasil: República de 1946')
+  })
+  it('Laboratório (máquina do tempo): na época antiga, 500 a.C. cai na Idade Antiga, com a República romana em curso', () => {
+    noRouter(<Laboratorio />, '/?tela=lab&ep=antiga&a=-500')
+    expect(texto()).toContain('Ano 500 a.C.')
+    expect(texto()).toContain('Mundo: Idade Antiga')
+    expect(screen.getByRole('button', { name: /República romana/ })).toBeInTheDocument()
   })
   it('Jogo: a tela do jogo abre', () => {
     noRouter(<Laboratorio />, '/?tela=jogo')

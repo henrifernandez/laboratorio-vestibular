@@ -12,11 +12,13 @@ interface Props {
   unidade?: string
   /** texto lido por leitores de tela */
   descricao?: string
+  /** como escrever as marcas (ex.: anos antes de Cristo) */
+  formatarMarca?: (m: number) => string
 }
 
 const casas = (passo: number) => (String(passo).split('.')[1] ?? '').length
 
-export function ControleDeslizante({ rotulo, valor, onChange, min, max, passo = 1, marcas, unidade, descricao }: Props) {
+export function ControleDeslizante({ rotulo, valor, onChange, min, max, passo = 1, marcas, unidade, descricao, formatarMarca }: Props) {
   const id = useId()
   const [rascunho, setRascunho] = useState<string | null>(null)
   const ajusta = (v: number) => Math.min(max, Math.max(min, Math.round(v / passo) * passo))
@@ -75,7 +77,7 @@ export function ControleDeslizante({ rotulo, valor, onChange, min, max, passo = 
               className="absolute -translate-x-1/2"
               style={{ left: `calc(${((m - min) / (max - min)) * 100}% + ${8 - ((m - min) / (max - min)) * 16}px)` }}
             >
-              {String(m).replace('.', ',')}
+              {formatarMarca ? formatarMarca(m) : String(m).replace('.', ',')}
             </span>
           ))}
         </div>

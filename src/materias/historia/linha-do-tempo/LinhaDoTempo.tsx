@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as PointerReact } from 'react'
 import { Coins, Landmark, Palette, Swords, Users, type LucideIcon } from 'lucide-react'
 import { ANO_MAX, ANO_MIN } from '@/conteudo/historia/linhaDoTempo'
-import { rotuloAno, type Acontecimento, type Era, type TipoEvento } from '@/conteudo/historia/tipos'
-import { VISTA_TOTAL, deslocar, limitarVista, marcasDoEixo, posicaoDoAno, posicionarRotulos, trechoVisivel, vistaParaIntervalo, zoomEm, type Vista } from './calculo'
+import { formatarAno, rotuloAno, type Acontecimento, type Era, type TipoEvento } from '@/conteudo/historia/tipos'
+import { VISTA_TOTAL, deslocar, deslocarPorPixels, limitarVista, marcasDoEixo, posicaoDoAno, posicionarRotulos, rotuloEra, trechoVisivel, vistaParaIntervalo, zoomEm, type Vista } from './calculo'
+import { FichaRapida } from './FichaRapida'
 
 export const ICONE_TIPO: Record<TipoEvento, LucideIcon> = { politico: Landmark, economico: Coins, social: Users, cultural: Palette, guerra: Swords }
 /** Cor de cada tipo de acontecimento (tokens que já têm versão para o modo escuro). */
@@ -13,7 +14,7 @@ export const fundoDaEra = (cor: string) => `color-mix(in srgb, ${cor} 20%, var(-
 const FAIXA = 28 // espessura da faixa de eras
 const GAP = 18 // metade da faixa do eixo, onde ficam os anos
 const MARGEM = 12 // espaço entre a faixa de eras e o primeiro rótulo
-const ALTURA_H = 580 // altura da linha do tempo horizontal
+const ALTURA_H = 680 // altura da linha do tempo horizontal (quatro linhas de cartões de cada lado e espaço para a ficha rápida)
 const ALTURA_V = 560 // altura da linha do tempo vertical (celular)
 const RODAPE_V = 0
 const ROTULO_H = 54 // altura de um rótulo na horizontal
@@ -31,6 +32,8 @@ interface Props {
   onSelecionar: (id: string) => void
   mostrarMundo: boolean
   mostrarBrasil: boolean
+  /** leva ao card completo do acontecimento (aparece como botão na ficha rápida) */
+  onDetalhes?: (id: string) => void
 }
 
 /** Resumo do tempo todo, com a janela atual em destaque; clicar ou arrastar leva a janela para aquele ponto. */
@@ -60,22 +63,26 @@ function Minimapa({ eras, vista, onVista, mostrarMundo, mostrarBrasil }: Pick<Pr
         {mostrarBrasil && <div className="absolute inset-x-0 bottom-0 h-[42%]">{faixa('brasil')}</div>}
         <div className="absolute inset-y-0 rounded-sm border-2 border-[var(--ink)] bg-[var(--ink)]/10" style={{ left: pct(vista.c - vista.s / 2), width: `${Math.min(100, (vista.s / total) * 100)}%` }} />
       </div>
-      <div className="num flex justify-between text-[11px] text-[var(--ink-muted)]">
-        <span>{ANO_MIN + 10}</span>
-        <span>Resumo de todo o período: arraste a moldura para navegar</span>
-        <span>{ANO_MAX - 5}</span>
+      <div className="num flex justify-between gap-2 text-[11px] text-[var(--ink-muted)]">
+        <span>{formatarAno(ANO_MIN)}</span>
+        <span className="text-center">Todo o período: clique ou arraste a moldura para ir a outra época</span>
+        <span>hoje</span>
       </div>
     </div>
   )
 }
 
 /**
- * Linha do tempo com zoom (roda do mouse, pinça e teclas) e arraste. Horizontal quando há espaço; vertical no celular.
- * Mundo de um lado do eixo e Brasil do outro; os acontecimentos mais importantes aparecem primeiro e os demais, ao aproximar.
+ * Linha do tempo com arraste (mouse, dedo ou roda do mouse) e zoom (Ctrl + roda, pinça e teclas).
+ * Horizontal quando há espaço; vertical no celular. Mundo de um lado do eixo e Brasil do outro;
+ * os acontecimentos mais importantes aparecem primeiro e os demais, ao aproximar.
+ * Clicar num acontecimento abre a ficha rápida (o essencial) ao lado dele.
  */
-export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSelecionar, mostrarMundo, mostrarBrasil }: Props) {
+export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSelecionar, mostrarMundo, mostrarBrasil, onDetalhes }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [largura, setLargura] = useState(900)
+  /** acontecimento cuja ficha rápida está aberta (só por clique na linha) */
+  const [aberta, setAberta] = useState<string | null>(null)
   const vertical = largura < 640
   const altura = vertical ? ALTURA_V : ALTURA_H
 
@@ -127,12 +134,27 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    // roda do mouse ou trackpad: anda no tempo; com Ctrl (ou a pinça do trackpad, que chega como Ctrl + roda), aproxima e afasta
     const roda = (ev: WheelEvent) => {
+      if ((ev.target as HTMLElement).closest?.('[data-ficha]')) return
+      const { vertical: vert, L: comp } = dimRef.current
+      const escala = ev.deltaMode === 1 ? 16 : ev.deltaMode === 2 ? comp : 1
+      const atual = vistaRef.current
+      let nova: Vista
+      if (ev.ctrlKey || ev.metaKey) {
+        const r = el.getBoundingClientRect()
+        const ancora = vert ? (ev.clientY - r.top) / r.height : (ev.clientX - r.left) / r.width
+        const fator = Math.min(1.5, Math.max(0.66, Math.exp(ev.deltaY * escala * 0.0015)))
+        nova = zoomEm(atual, Math.min(1, Math.max(0, ancora)), fator)
+      } else {
+        const delta = (vert || Math.abs(ev.deltaY) >= Math.abs(ev.deltaX) ? ev.deltaY : ev.deltaX) * escala
+        nova = deslocarPorPixels(atual, delta, comp)
+        // já na ponta da linha: deixa a página rolar normalmente
+        if (nova.c === atual.c) return
+      }
       ev.preventDefault()
-      const r = el.getBoundingClientRect()
-      const ancora = dimRef.current.vertical ? (ev.clientY - r.top) / r.height : (ev.clientX - r.left) / r.width
-      const fator = Math.min(1.5, Math.max(0.66, Math.exp(ev.deltaY * 0.0015)))
-      onVistaRef.current(zoomEm(vistaRef.current, Math.min(1, Math.max(0, ancora)), fator))
+      vistaRef.current = nova // vários eventos podem chegar antes do próximo desenho
+      onVistaRef.current(nova)
     }
     el.addEventListener('wheel', roda, { passive: false })
     return () => el.removeEventListener('wheel', roda)
@@ -144,7 +166,9 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
 
   const aoPressionar = (ev: PointerReact<HTMLDivElement>) => {
     arrastou.current = false
-    if ((ev.target as HTMLElement).closest('button')) return
+    // a ficha rápida é texto: dentro dela não se arrasta a linha
+    if ((ev.target as HTMLElement).closest('[data-ficha]')) return
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return
     ponteiros.current.set(ev.pointerId, { x: ev.clientX, y: ev.clientY })
     const pts = [...ponteiros.current.values()]
     const r = ev.currentTarget.getBoundingClientRect()
@@ -176,6 +200,9 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
     }
   }
   const aoSoltar = (ev: PointerReact<HTMLDivElement>) => {
+    const g = gesto.current
+    // toque simples no fundo (sem arrastar) fecha a ficha
+    if (ev.type === 'pointerup' && g?.tipo === 'pan' && !g.moveu && !(ev.target as HTMLElement).closest('button, [data-ficha]')) setAberta(null)
     ponteiros.current.delete(ev.pointerId)
     if (ponteiros.current.size === 0) gesto.current = null
     else if (ponteiros.current.size === 1) {
@@ -194,6 +221,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
     else if (ev.key === avanca) onVista(deslocar(vista, passo))
     else if (ev.key === volta) onVista(deslocar(vista, -passo))
     else if (ev.key === 'Home') onVista(VISTA_TOTAL)
+    else if (ev.key === 'Escape' && aberta) setAberta(null)
     else return
     ev.preventDefault()
   }
@@ -231,7 +259,12 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
             aria-pressed={sel}
             aria-label={`${e.titulo}, ${rotuloAno(e)}`}
             title={`${e.titulo} (${rotuloAno(e)})`}
-            onClick={() => onSelecionar(e.id)}
+            onClick={() => {
+              // o clique que encerra um arraste não seleciona nada
+              if (arrastou.current) return
+              onSelecionar(e.id)
+              setAberta(e.id)
+            }}
             className="absolute flex items-start gap-1.5 overflow-hidden rounded-md border bg-[var(--surface)] px-1.5 py-1 text-left leading-tight shadow-sm transition-colors hover:bg-[var(--surface-2)]"
             style={{ ...estilo, zIndex: sel ? 6 : 4, borderColor: sel ? 'var(--accent)' : 'var(--line-strong)', borderLeftColor: era?.cor ?? 'var(--line-strong)', borderLeftWidth: 5, outline: sel ? '3px solid var(--accent)' : undefined }}
           >
@@ -264,7 +297,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         return (
           <div
             key={era.id}
-            title={`${era.nome} (${era.inicio}–${era.fim}): ${era.resumo} Clique para ver o período.`}
+            title={`${era.nome} (${rotuloEra(era)}): ${era.resumo} Clique para ver o período.`}
             onClick={() => !arrastou.current && onVista(vistaParaIntervalo(era.inicio, era.fim))}
             className="absolute flex cursor-pointer items-center justify-center overflow-hidden text-xs font-semibold"
             style={{ ...estilo, zIndex: 2, background: fundoDaEra(era.cor), borderLeft: vertical ? undefined : `4px solid ${era.cor}`, borderTop: vertical ? `4px solid ${era.cor}` : undefined, writingMode: vertical ? 'vertical-rl' : undefined }}
@@ -288,6 +321,35 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         })()
       : null
 
+  // ficha rápida: do outro lado do eixo, para não cobrir o cartão clicado; no celular, por cima da linha (fecha no X ou com Esc)
+  const fichaEv = aberta && aberta === selecionado ? porId.get(aberta) : undefined
+  const fichaVisivel = fichaEv && (fichaEv.regiao === 'mundo' ? mostrarMundo : mostrarBrasil)
+  let ficha: React.ReactNode = null
+  if (fichaEv && fichaVisivel) {
+    const fechar = () => {
+      setAberta(null)
+      ref.current?.focus({ preventScroll: true })
+    }
+    const detalhes = onDetalhes ? () => onDetalhes(fichaEv.id) : undefined
+    if (vertical) {
+      ficha = <FichaRapida ev={fichaEv} onFechar={fechar} onDetalhes={detalhes} estilo={{ left: 8, right: 8, bottom: 8, maxHeight: altura - 16 }} />
+    } else {
+      const W = Math.min(720, largura - 16)
+      const pos = Math.min(L, Math.max(0, p(fichaEv.inicio)))
+      const left = Math.min(largura - W - 8, Math.max(8, pos - W / 2))
+      const mundo = fichaEv.regiao === 'mundo'
+      const corEra = eras.find((x) => x.regiao === fichaEv.regiao && fichaEv.inicio >= x.inicio && fichaEv.inicio <= x.fim)?.cor ?? 'var(--line-strong)'
+      const estilo: CSSProperties = mundo ? { left, width: W, top: eixo + 10, maxHeight: altura - eixo - 16 } : { left, width: W, bottom: cruz - eixo + 10, maxHeight: eixo - 16 }
+      ficha = (
+        <>
+          {/* bico que aponta para o ano do acontecimento no eixo */}
+          <div aria-hidden="true" className="absolute z-[21]" style={{ left: pos - 8, width: 16, height: 10, top: mundo ? eixo + 1 : eixo - 11, background: corEra, clipPath: mundo ? 'polygon(50% 0, 100% 100%, 0 100%)' : 'polygon(0 0, 100% 0, 50% 100%)' }} />
+          <FichaRapida ev={fichaEv} onFechar={fechar} onDetalhes={detalhes} estilo={estilo} largo={W >= 520} />
+        </>
+      )
+    }
+  }
+
   const comprimentoGrade = vertical ? largura : altura
   return (
     <div className="grid gap-2">
@@ -295,7 +357,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         ref={ref}
         role="group"
         tabIndex={0}
-        aria-label="Linha do tempo. Use + e − para aproximar e afastar, as setas para mover e Home para ver tudo. Os acontecimentos são botões."
+        aria-label="Linha do tempo. Use + e − para aproximar e afastar, as setas para mover e Home para ver tudo. Os acontecimentos são botões; ao escolher um, abre-se uma ficha rápida, que fecha com Esc."
         onKeyDown={aoTeclar}
         onPointerDown={aoPressionar}
         onPointerMove={aoMover}
@@ -309,16 +371,27 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
           <div key={`g${a}`} aria-hidden="true" className="absolute" style={{ background: 'var(--line)', opacity: a % 100 === 0 ? 1 : 0.55, ...(vertical ? { top: p(a), left: 0, width: comprimentoGrade, height: 1 } : { left: p(a), top: 0, height: comprimentoGrade, width: 1 }) }} />
         ))}
         <div aria-hidden="true" className="absolute bg-[var(--line-strong)]" style={{ ...eixoStyle, zIndex: 1 }} />
-        {marcas.map((a) => (
-          <div key={a} aria-hidden="true" className="num absolute z-[2] text-center text-xs font-semibold text-[var(--ink-muted)]" style={vertical ? { top: p(a) - 9, left: eixo - GAP, width: GAP * 2, background: 'var(--surface)' } : { left: p(a) - 22, width: 44, top: eixo - 9, background: 'var(--surface)', borderRadius: 4 }}>
-            {a}
-          </div>
-        ))}
+        {/* anos do eixo; o zero fica sem rótulo, porque não existe ano zero (de 1 a.C. passa-se a 1 d.C.) */}
+        {marcas
+          .filter((a) => a !== 0)
+          .map((a) =>
+            vertical ? (
+              <div key={a} aria-hidden="true" className="num absolute z-[2] grid text-center text-xs font-semibold leading-none text-[var(--ink-muted)]" style={{ top: p(a) - (a < 0 ? 12 : 7), left: eixo - GAP, width: GAP * 2, background: 'var(--surface)' }}>
+                <span>{Math.abs(a)}</span>
+                {a < 0 && <span className="text-[10px]">a.C.</span>}
+              </div>
+            ) : (
+              <div key={a} aria-hidden="true" className="num absolute z-[2] whitespace-nowrap text-center text-xs font-semibold text-[var(--ink-muted)]" style={{ left: p(a) - 34, width: 68, top: eixo - 9, background: 'var(--surface)', borderRadius: 4 }}>
+                {formatarAno(a)}
+              </div>
+            ),
+          )}
         {mostrarMundo && faixasDeEras('mundo')}
         {mostrarBrasil && faixasDeEras('brasil')}
         {barra}
         {mostrarMundo && rotulosDe('mundo')}
         {mostrarBrasil && rotulosDe('brasil')}
+        {ficha}
         {mostrarMundo && (
           <span aria-hidden="true" className="pointer-events-none absolute z-[8] rounded-full border border-[var(--line-strong)] bg-[var(--surface)] px-2 py-0.5 text-xs font-bold" style={{ left: 8, top: 8 }}>
             {vertical ? 'Mundo' : '↑ Mundo'}
@@ -331,8 +404,18 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         )}
       </div>
       <Minimapa eras={eras} vista={vista} onVista={onVista} mostrarMundo={mostrarMundo} mostrarBrasil={mostrarBrasil} />
+      {vertical ? (
+        <p className="m-0 text-sm">
+          <strong>Para andar no tempo:</strong> arraste a linha para cima ou para baixo. <strong>Para aproximar ou afastar:</strong> pinça com dois dedos ou os botões. <strong>Toque num acontecimento</strong> para abrir a ficha rápida.
+        </p>
+      ) : (
+        <p className="m-0 text-sm">
+          <strong>Para andar no tempo:</strong> arraste a linha (pode começar em cima de um cartão), role a roda do mouse ou use as setas.{' '}
+          <strong>Para aproximar ou afastar:</strong> Ctrl + roda, pinça com dois dedos ou os botões. <strong>Clique num acontecimento</strong> para abrir a ficha rápida.
+        </p>
+      )}
       <p className="m-0 text-sm text-[var(--ink-muted)]" aria-live="polite">
-        Mostrando de {Math.round(vista.c - vista.s / 2)} a {Math.round(vista.c + vista.s / 2)}
+        Mostrando de {formatarAno(Math.round(vista.c - vista.s / 2))} a {formatarAno(Math.round(vista.c + vista.s / 2))}
         {ocultos > 0 ? `. ${ocultos} acontecimento${ocultos === 1 ? '' : 's'} não cabe${ocultos === 1 ? '' : 'm'} neste zoom: aproxime ou escolha um período para ver.` : '. Todos os acontecimentos desta janela estão visíveis.'}
       </p>
     </div>
