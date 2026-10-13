@@ -40,8 +40,8 @@ describe('Cartão do autor', () => {
 })
 
 describe('Desafios: a tela de cada pergunta renderiza', () => {
-  it('as 5 definições, em 3 níveis e várias sementes', () => {
-    expect(DEFINICOES_SOCIOLOGIA).toHaveLength(5)
+  it('as 8 definições, em 3 níveis e várias sementes', () => {
+    expect(DEFINICOES_SOCIOLOGIA).toHaveLength(8)
     for (const def of DEFINICOES_SOCIOLOGIA)
       for (const nivel of NIVEIS)
         for (let semente = 1; semente <= 8; semente++) {

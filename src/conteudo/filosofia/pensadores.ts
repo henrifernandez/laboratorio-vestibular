@@ -734,6 +734,21 @@ export const PASSOS_FILOSOFIA: PassoHumanas[] = [
     autores: ['sartre', 'arendt'],
   },
   {
+    titulo: 'Quem é de qual corrente',
+    texto: [
+      'Para a prova, além de conhecer cada pensador, vale saber a qual corrente ele costuma ser ligado: Descartes ao racionalismo; Locke e Hume ao empirismo; Kant ao criticismo, que une razão e experiência; Hobbes, Locke e Rousseau ao contratualismo; Platão ao idealismo e Aristóteles ao realismo; Marx ao materialismo histórico; Sartre ao existencialismo.',
+      'Alguns nomes pertencem a mais de um grupo, conforme o tema em discussão: Locke é empirista no conhecimento e contratualista na política; Rousseau, Kant e Hume são ligados ao Iluminismo. Por isso, em cada pergunta, leia o assunto antes de escolher a corrente.',
+    ],
+    pare: {
+      pergunta: 'Locke aparece como empirista e como contratualista. O que explica isso?',
+      opcoes: ['Ele mudou de ideia ao longo da vida, e por isso aparece nos dois', 'Cada corrente trata de um assunto: o empirismo, do conhecimento, e o contratualismo, da política', 'Os manuais erram ao classificá-lo'],
+      certa: 1,
+      explicacao: 'Empirismo e contratualismo respondem a perguntas diferentes (como conhecemos; de onde vem o poder político), e um mesmo pensador pode escrever sobre as duas.',
+    },
+    autores: [],
+    visual: 'correntes',
+  },
+  {
     titulo: 'Como ler um texto filosófico na prova',
     texto: [
       'Textos de prova costumam apresentar um trecho curto e pedir que você reconheça a tese, o conceito ou o autor. Faça três perguntas ao trecho: qual é o problema (o que se discute?), qual é a tese (o que se afirma?) e quais são os conceitos (que palavras sustentam o argumento?).',
@@ -750,6 +765,17 @@ export const PASSOS_FILOSOFIA: PassoHumanas[] = [
 ]
 
 export const RESUMO_FILOSOFIA: SecaoResumo[] = [
+  {
+    titulo: 'Quem é de qual corrente',
+    formulas: [],
+    ideias: [
+      'Conhecimento: racionalismo (Descartes), empirismo (Locke e Hume) e criticismo (Kant, que une os dois).',
+      'Política: realismo político (Maquiavel) e contratualismo (Hobbes, Locke e Rousseau); filosofia política do século XX (Arendt).',
+      'Realidade: idealismo (Platão) e realismo (Aristóteles); materialismo histórico (Marx); existencialismo (Sartre); genealogia da moral (Nietzsche).',
+    ],
+    pegadinhas: ['Achar que cada pensador pertence a uma só corrente: Locke é empirista e contratualista.', 'Confundir racionalismo (razão como fonte do conhecimento) com Iluminismo (movimento mais amplo, de confiança na razão e na liberdade).', 'Achar que Kant é só racionalista ou só empirista: ele articula as duas.'],
+    fontes: FONTES_FILOSOFIA,
+  },
   {
     titulo: 'Antiguidade',
     formulas: [],

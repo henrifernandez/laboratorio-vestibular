@@ -63,6 +63,8 @@ export interface PassoHumanas {
   pare?: { pergunta: string; opcoes: string[]; certa: number; explicacao: string }
   /** autores mostrados em cartão neste passo */
   autores?: string[]
+  /** quadro especial no lugar dos cartões (por exemplo, o das correntes da Filosofia) */
+  visual?: 'correntes'
 }
 
 export const autorPorId = (autores: Autor[], id: string) => autores.find((a) => a.id === id)

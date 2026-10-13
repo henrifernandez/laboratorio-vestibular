@@ -1,3 +1,4 @@
+import { CORRENTES, CORRENTE_DOS_PENSADORES, correntesAceitas } from '@/conteudo/filosofia/correntes'
 import { ARESTAS, PENSADORES, type Epoca, type TipoAresta } from '@/conteudo/filosofia/pensadores'
 import { fonteLegivel, useLargura } from '@/lib/useLargura'
 
@@ -124,3 +125,30 @@ export function LegendaLinha() {
 }
 
 export { ARESTAS, rotuloAno }
+
+/* ------------------------------------------------------------------ quadro das correntes */
+
+/** Cada corrente com a sua ideia central e os pensadores ligados a ela (tabela em texto, que funciona também em tela estreita). */
+export function QuadroCorrentes({ destaque, onEscolher }: { destaque?: string; onEscolher?: (id: string) => void }) {
+  return (
+    <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2" aria-label="Correntes e pensadores">
+      {CORRENTES.map((c) => {
+        const nomes = PENSADORES.filter((p) => correntesAceitas(p.id).includes(c.id)).map((p) => (CORRENTE_DOS_PENSADORES[p.id]?.principal === c.id ? p.nome : `${p.nome} (também)`))
+        const ativa = destaque === c.id
+        return (
+          <li key={c.id} className="cartao grid content-start gap-1 p-3" style={ativa ? { borderColor: 'var(--accent)', outline: '2px solid var(--accent)' } : undefined}>
+            {onEscolher ? (
+              <button type="button" aria-pressed={ativa} onClick={() => onEscolher(c.id)} className="m-0 min-h-11 bg-transparent p-0 text-left text-base font-semibold">
+                {c.nome}
+              </button>
+            ) : (
+              <p className="m-0 font-semibold">{c.nome}</p>
+            )}
+            <p className="m-0 text-sm">{c.sintese}</p>
+            <p className="m-0 text-sm text-[var(--ink-muted)]">Pensadores: {nomes.join(', ')}</p>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}

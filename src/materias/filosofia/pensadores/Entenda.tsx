@@ -2,9 +2,10 @@ import { PASSOS_FILOSOFIA, PENSADORES } from '@/conteudo/filosofia/pensadores'
 import { autorPorId, NOTA_AUTORES, type PassoHumanas } from '@/conteudo/humanas'
 import { EntendaPassos, type PassoEntenda } from '@/componentes/EntendaPassos'
 import { CartaoAutor } from '../../humanas/comum/Visuais'
-import { LegendaLinha, LinhaDoTempoPensadores } from './Visuais'
+import { LegendaLinha, LinhaDoTempoPensadores, QuadroCorrentes } from './Visuais'
 
 function Visual({ passo }: { passo: PassoHumanas }) {
+  if (passo.visual === 'correntes') return <QuadroCorrentes />
   const ids = passo.autores ?? []
   if (!ids.length) {
     return (

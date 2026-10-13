@@ -1,9 +1,10 @@
 import { AUTORES_SOCIOLOGIA } from '@/conteudo/sociologia/tresLentes'
 import type { DefinicaoQualquer } from '@/desafios/PainelDesafio'
+import { criarDefLigar } from '@/desafios/ligar'
 import { criarDefMulti } from '@/desafios/simples'
 import type { DadosAutor } from '../../humanas/comum/geradores'
 import { criarVisualAutor } from '../../humanas/comum/VisualAutor'
-import { gerarConceitoSociologia, gerarObraSociologia, gerarQuemSociologia, gerarSituacao, gerarTipos, type DadosSituacao, type DadosTipos } from './geradores'
+import { gerarConceitoSociologia, gerarLigarCaso, gerarLigarConceitoSociologia, gerarLigarCorrenteSociologia, gerarObraSociologia, gerarQuemSociologia, gerarSituacao, gerarTipos, type DadosSituacao, type DadosTipos } from './geradores'
 
 const base = { materia: 'sociologia' as const, tema: 'tres-lentes' }
 const VisualAutor = criarVisualAutor(AUTORES_SOCIOLOGIA)
@@ -48,5 +49,29 @@ export const DEFINICOES_SOCIOLOGIA: DefinicaoQualquer[] = [
     instrucao: 'Relacione cada obra ao autor e à sua ideia central.',
     gerar: gerarObraSociologia,
     Visual: VisualAutor,
+  }),
+  criarDefLigar({
+    ...base,
+    id: 'sociologia/tres-lentes/ligar-corrente',
+    titulo: 'Autor e corrente',
+    instrucao: 'Ligue cada sociólogo à corrente de pensamento a que ele pertence.',
+    gerar: gerarLigarCorrenteSociologia,
+    textos: { motivo: 'ligou o autor à corrente errada', licao: 'Cada corrente tem um foco: fatos sociais, ação com sentido, classes, cultura de massa, capital cultural, modernidade líquida.' },
+  }),
+  criarDefLigar({
+    ...base,
+    id: 'sociologia/tres-lentes/ligar-conceito',
+    titulo: 'Autor e conceito',
+    instrucao: 'Ligue cada autor a um conceito dele: pense no assunto central de cada um.',
+    gerar: gerarLigarConceitoSociologia,
+    textos: { motivo: 'ligou o conceito ao autor errado', licao: 'Cada conceito nasce do problema central do autor: associe o termo ao assunto da obra.' },
+  }),
+  criarDefLigar({
+    ...base,
+    id: 'sociologia/tres-lentes/ligar-caso',
+    titulo: 'Caso e categoria',
+    instrucao: 'Ligue cada caso do dia a dia à categoria da teoria que ele ilustra.',
+    gerar: gerarLigarCaso,
+    textos: { motivo: 'ligou o caso à categoria errada', licao: 'Procure no caso o motivo da ação ou o que sustenta a situação, e compare com a definição de cada categoria.' },
   }),
 ]

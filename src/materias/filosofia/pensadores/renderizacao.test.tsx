@@ -45,8 +45,8 @@ describe('Linha do tempo', () => {
 })
 
 describe('Desafios: a tela de cada pergunta renderiza', () => {
-  it('as 6 definições, em 3 níveis e várias sementes', () => {
-    expect(DEFINICOES_FILOSOFIA).toHaveLength(6)
+  it('as 10 definições, em 3 níveis e várias sementes', () => {
+    expect(DEFINICOES_FILOSOFIA).toHaveLength(10)
     for (const def of DEFINICOES_FILOSOFIA)
       for (const nivel of NIVEIS)
         for (let semente = 1; semente <= 8; semente++) {
@@ -104,6 +104,24 @@ describe('Laboratório', () => {
     expect(screen.getByRole('list', { name: 'Posições dos pensadores' }).querySelectorAll('li')).toHaveLength(debate.posicoes.length)
     expect(texto()).toContain('René Descartes')
     expect(texto()).toContain('Immanuel Kant')
+  })
+  it('Explorar: correntes mostram ideia, teses e pensadores, com o aviso de quem se liga também', () => {
+    noRouter(<Laboratorio />, '/?tela=explorar&vista=correntes&c=contratualismo')
+    expect(texto()).toContain('O poder político e a sociedade se justificam por um pacto')
+    const lista = screen.getByRole('list', { name: 'Pensadores de Contratualismo' })
+    expect(lista.querySelectorAll('li')).toHaveLength(3)
+    expect(lista.textContent).toContain('Thomas Hobbes')
+    expect(lista.textContent).toContain('a principal é Empirismo')
+    expect(screen.getByRole('list', { name: 'Correntes e pensadores' }).querySelectorAll('li').length).toBeGreaterThanOrEqual(13)
+  })
+  it('Entenda: a etapa das correntes mostra o quadro com todas as correntes', () => {
+    noRouter(<Entenda />)
+    const n = PASSOS_FILOSOFIA.length
+    const i = PASSOS_FILOSOFIA.findIndex((p) => p.visual === 'correntes')
+    expect(i).toBeGreaterThan(0)
+    for (let k = 0; k < i; k++) fireEvent.click(screen.getByRole('button', { name: /Próxima/ }))
+    expect(screen.getByText(`Etapa ${i + 1} de ${n}`)).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'Correntes e pensadores' })).toBeInTheDocument()
   })
   it('Jogo: a tela do jogo carrega', () => {
     noRouter(<Laboratorio />, '/?tela=jogo')

@@ -1,11 +1,12 @@
+import { CORRENTES, CORRENTE_DOS_PENSADORES, correntesAceitas } from '@/conteudo/filosofia/correntes'
 import { ARESTAS, DEBATES, PENSADORES } from '@/conteudo/filosofia/pensadores'
 import { autorPorId, NOTA_AUTORES } from '@/conteudo/humanas'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
-import { Cartao, Rodape, Seletor } from '@/sim/ComunsLab'
+import { Alternador, Cartao, Rodape, Seletor } from '@/sim/ComunsLab'
 import { LaboratorioTelas } from '@/sim/LaboratorioTelas'
 import { CartaoAutor } from '../../humanas/comum/Visuais'
 import { DEFINICOES_FILOSOFIA } from './definicoes'
-import { LegendaLinha, LinhaDoTempoPensadores, SIGLA } from './Visuais'
+import { LegendaLinha, LinhaDoTempoPensadores, QuadroCorrentes, SIGLA } from './Visuais'
 
 const OPCOES_PENSADORES = PENSADORES.map((p) => ({ id: p.id, rotulo: `${p.nome} (${p.periodo})` }))
 const pensador = (id: string, padrao: string) => autorPorId(PENSADORES, id) ?? autorPorId(PENSADORES, padrao)!
@@ -81,6 +82,71 @@ function TelaMapa() {
   )
 }
 
+/* ------------------------------------------------------------------ Explorar: correntes */
+
+function TelaCorrentes() {
+  const [e, atualizar, reiniciar] = useEstadoUrl({ c: 'empirismo' })
+  const c = CORRENTES.find((x) => x.id === e.c) ?? (CORRENTES[0] as (typeof CORRENTES)[number])
+  const membros = PENSADORES.filter((p) => correntesAceitas(p.id).includes(c.id))
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid content-start gap-3">
+        <Cartao vivo>
+          <p className="m-0 text-lg font-semibold">{c.nome}</p>
+          <p className="m-0">{c.sintese}</p>
+          <h3 className="m-0 mt-1 text-base">Teses típicas</h3>
+          <ul className="m-0 grid gap-1 pl-5">
+            {c.teses.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <h3 className="m-0 mt-1 text-base">Pensadores ligados a ela</h3>
+          <ul className="m-0 grid list-none gap-1 p-0" aria-label={`Pensadores de ${c.nome}`}>
+            {membros.map((p) => (
+              <li key={p.id}>
+                <strong>{p.nome}</strong> <span className="num text-sm text-[var(--ink-muted)]">({p.periodo})</span>
+                {CORRENTE_DOS_PENSADORES[p.id]?.principal === c.id ? '' : <span className="text-sm text-[var(--ink-muted)]"> (liga-se também a esta corrente; a principal é {CORRENTES.find((x) => x.id === CORRENTE_DOS_PENSADORES[p.id]?.principal)?.nome})</span>}
+                <br />
+                <span className="text-sm">{p.resumo}</span>
+              </li>
+            ))}
+          </ul>
+        </Cartao>
+      </div>
+      <div className="grid content-start gap-4">
+        <Seletor rotulo="Corrente" valor={c.id} opcoes={CORRENTES.map((x) => ({ id: x.id, rotulo: x.nome }))} onChange={(v) => atualizar({ c: v })} />
+        <p className="m-0 text-sm text-[var(--ink-muted)]">Escolha uma corrente para ver a ideia central, as teses típicas e os pensadores ligados a ela. Para treinar, use os desafios “Pensador e corrente” e “Qual corrente defende esta tese?”.</p>
+        <details className="cartao p-3">
+          <summary className="cursor-pointer font-semibold">Quadro de todas as correntes</summary>
+          <div className="mt-2">
+            <QuadroCorrentes destaque={c.id} onEscolher={(id) => atualizar({ c: id })} />
+          </div>
+        </details>
+        <p className="m-0 text-xs text-[var(--ink-muted)]">{NOTA_AUTORES}</p>
+        <Rodape onReiniciar={reiniciar} />
+      </div>
+    </div>
+  )
+}
+
+function TelaExplorar() {
+  const [v, atualizar] = useEstadoUrl({ vista: 'mapa' })
+  return (
+    <div className="grid gap-4">
+      <Alternador
+        rotulo="O que explorar"
+        valor={v.vista === 'correntes' ? 'correntes' : 'mapa'}
+        opcoes={[
+          { id: 'mapa', rotulo: 'Mapa de influências' },
+          { id: 'correntes', rotulo: 'Correntes e pensadores' },
+        ]}
+        onChange={(id) => atualizar({ vista: id })}
+      />
+      {v.vista === 'correntes' ? <TelaCorrentes /> : <TelaMapa />}
+    </div>
+  )
+}
+
 /* ------------------------------------------------------------------ Laboratório: debates */
 
 const PADRAO_DEBATE = { d: 'poder' }
@@ -123,7 +189,7 @@ export default function Laboratorio() {
     <LaboratorioTelas
       telas={[
         { id: 'intro', conteudo: <TelaCartoes /> },
-        { id: 'explorar', conteudo: <TelaMapa /> },
+        { id: 'explorar', conteudo: <TelaExplorar /> },
         { id: 'lab', conteudo: <TelaDebates /> },
       ]}
       desafios={DEFINICOES_FILOSOFIA}

@@ -107,13 +107,13 @@ export const MATERIAS: MateriaInfo[] = [
     id: 'filosofia',
     nome: 'Filosofia',
     descricao: 'Mapa dos pensadores, debates e conceitos.',
-    temas: [t('pensadores', 'Mapa dos pensadores', 'Quatorze pensadores em linha do tempo, com influências, conceitos e grandes debates.', true, 18)],
+    temas: [t('pensadores', 'Mapa dos pensadores', 'Quatorze pensadores em linha do tempo, com influências, correntes, conceitos e grandes debates.', true, 30)],
   },
   {
     id: 'sociologia',
     nome: 'Sociologia',
     descricao: 'Três lentes para a mesma situação social.',
-    temas: [t('tres-lentes', 'Três lentes', 'Durkheim, Weber e Marx, mais Adorno e Horkheimer, Bourdieu e Bauman, aplicados a casos do dia a dia.', true, 15)],
+    temas: [t('tres-lentes', 'Três lentes', 'Durkheim, Weber e Marx, mais Adorno e Horkheimer, Bourdieu e Bauman, aplicados a casos do dia a dia.', true, 24)],
   },
 ]
 

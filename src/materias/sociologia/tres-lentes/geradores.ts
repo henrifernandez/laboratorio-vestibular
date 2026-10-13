@@ -1,10 +1,11 @@
 import { AUTORES_SOCIOLOGIA, CATEGORIAS, EXEMPLOS, SITUACOES, type CategoriaTipo } from '@/conteudo/sociologia/tresLentes'
 import { autorPorId } from '@/conteudo/humanas'
+import type { InstanciaLigar } from '@/desafios/ligar'
 import type { InstanciaMulti } from '@/desafios/simples'
 import type { Nivel } from '@/desafios/tipos'
 import { embaralhar, escolher, type Rng } from '@/lib/rng'
 import { montar, type Opc } from '@/materias/biologia/comum/auxiliares'
-import { gerarConceito, gerarObra, gerarQuem, type DadosAutor } from '../../humanas/comum/geradores'
+import { gerarConceito, gerarLigarConceito, gerarLigarTradicao, gerarObra, gerarQuem, type DadosAutor } from '../../humanas/comum/geradores'
 
 const CLASSICOS = ['durkheim', 'weber', 'marx']
 const nomeDe = (id: string) => autorPorId(AUTORES_SOCIOLOGIA, id)?.nome ?? id
@@ -93,4 +94,31 @@ export function gerarTipos(rng: Rng, nivel: Nivel): InstanciaMulti<DadosTipos> {
     licao: `${alvo.nome}: ${alvo.definicao}.`,
     dados: { autorId: autor, grupo },
   })
+}
+
+/* ------------------------------------------------------------------ ligar autores, correntes e casos */
+
+export const gerarLigarConceitoSociologia = (rng: Rng, nivel: Nivel) => gerarLigarConceito(rng, nivel, AUTORES_SOCIOLOGIA)
+export const gerarLigarCorrenteSociologia = (rng: Rng, nivel: Nivel) => gerarLigarTradicao(rng, nivel, AUTORES_SOCIOLOGIA)
+
+/**
+ * Ligar cada caso à categoria a que ele pertence. Os casos vêm de categorias diferentes; no nível 1 todas são do mesmo autor
+ * (Weber: tipos de ação) e, no nível 3, sobram duas categorias que não servem a nenhum caso.
+ */
+export function gerarLigarCaso(rng: Rng, nivel: Nivel): InstanciaLigar {
+  const n = nivel === 1 ? 3 : nivel === 2 ? 4 : 5
+  const categorias = nivel === 1 ? CATEGORIAS.filter((c) => c.grupo === 'weber-acao') : CATEGORIAS
+  const escolhidas = embaralhar(rng, categorias).slice(0, n)
+  const casos = escolhidas.map((c) => ({ c, e: escolher(rng, EXEMPLOS.filter((x) => x.categoria === c.id)) }))
+  const sobra = nivel === 3 ? embaralhar(rng, CATEGORIAS.filter((c) => !escolhidas.some((x) => x.id === c.id))).slice(0, 2) : []
+  return {
+    titulo: 'Caso e categoria',
+    enunciado: `Ligue cada caso à categoria da teoria sociológica que ele ilustra. ${nivel === 3 ? 'Atenção: há categorias que não servem a nenhum destes casos.' : 'Cada categoria serve a um único caso.'}`,
+    esquerda: casos.map(({ c, e }, i) => ({ id: c.id, rotulo: `${i + 1}. ${e.texto}` })),
+    direita: embaralhar(rng, [...escolhidas, ...sobra]).map((c) => ({ id: c.id, rotulo: c.nome })),
+    certa: Object.fromEntries(casos.map(({ c }) => [c.id, c.id])),
+    porque: Object.fromEntries(casos.map(({ c, e }) => [c.id, `${c.nome} (${c.definicao}): ${e.razao}`])),
+    nivel,
+    dicas: ['Pergunte, em cada caso, qual é o motivo central da ação ou o que sustenta a situação.', `Compare as definições: ${escolhidas.map((c) => `${c.nome.toLowerCase()} (${c.definicao})`).slice(0, 3).join('; ')}.`, 'Resolva primeiro os casos mais claros e elimine as categorias já usadas.'],
+  }
 }

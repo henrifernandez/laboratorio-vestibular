@@ -1,8 +1,10 @@
 import { PENSADORES } from '@/conteudo/filosofia/pensadores'
 import type { DefinicaoQualquer } from '@/desafios/PainelDesafio'
+import { criarDefLigar } from '@/desafios/ligar'
 import { criarDefMulti } from '@/desafios/simples'
 import type { DadosAutor } from '../../humanas/comum/geradores'
 import { criarVisualAutor } from '../../humanas/comum/VisualAutor'
+import { gerarIntrusoFilosofia, gerarLigarConceitoFilosofia, gerarLigarCorrente, gerarTese } from './geradoresCorrentes'
 import { gerarConceitoFilosofia, gerarDebate, gerarEpoca, gerarInfluencia, gerarObraFilosofia, gerarQuemFilosofia } from './geradores'
 
 const base = { materia: 'filosofia' as const, tema: 'pensadores' }
@@ -55,5 +57,36 @@ export const DEFINICOES_FILOSOFIA: DefinicaoQualquer[] = [
     instrucao: 'Quem foi discípulo, crítico ou interlocutor de quem? Consulte o mapa de influências do laboratório.',
     gerar: gerarInfluencia,
     Visual: VisualAutor,
+  }),
+  criarDefLigar({
+    ...base,
+    id: 'filosofia/pensadores/correntes',
+    titulo: 'Pensador e corrente',
+    instrucao: 'Ligue cada pensador à corrente de pensamento a que ele pertence. Mais de um pensador pode ter a mesma corrente.',
+    gerar: gerarLigarCorrente,
+    textos: { motivo: 'ligou o pensador à corrente errada', licao: 'Associe cada pensador à ideia central da corrente: razão, experiência, pacto social, existência, classes sociais.' },
+  }),
+  criarDefMulti<DadosAutor>({
+    ...base,
+    id: 'filosofia/pensadores/tese',
+    titulo: 'Qual corrente defende esta tese?',
+    instrucao: 'Leia a tese e escolha a corrente de pensamento. Procure a palavra-chave: razão, experiência, pacto, ideias, existência.',
+    gerar: gerarTese,
+  }),
+  criarDefMulti<DadosAutor>({
+    ...base,
+    id: 'filosofia/pensadores/intruso',
+    titulo: 'Qual é o intruso?',
+    instrucao: 'Três pensadores pertencem ao grupo (uma época ou uma corrente); encontre o que ficou de fora.',
+    gerar: gerarIntrusoFilosofia,
+    Visual: VisualAutor,
+  }),
+  criarDefLigar({
+    ...base,
+    id: 'filosofia/pensadores/ligar-conceito',
+    titulo: 'Pensador e conceito',
+    instrucao: 'Ligue cada pensador a um conceito dele. Pense no assunto central da obra de cada um.',
+    gerar: gerarLigarConceitoFilosofia,
+    textos: { motivo: 'ligou o conceito ao pensador errado', licao: 'Cada conceito nasce de um problema central do pensador: associe o termo ao assunto da obra.' },
   }),
 ]

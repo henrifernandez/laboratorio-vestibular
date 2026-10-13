@@ -1,4 +1,5 @@
 import type { Autor } from '@/conteudo/humanas'
+import type { InstanciaLigar } from '@/desafios/ligar'
 import type { InstanciaMulti } from '@/desafios/simples'
 import type { Nivel } from '@/desafios/tipos'
 import { embaralhar, escolher, type Rng } from '@/lib/rng'
@@ -151,4 +152,46 @@ export function gerarObra(rng: Rng, nivel: Nivel, autores: Autor[]): InstanciaMu
       dados: dados(alvo),
     },
   )
+}
+
+/* ------------------------------------------------------------------ ligar autores a conceitos e a correntes */
+
+const QUANTOS: Record<Nivel, number> = { 1: 3, 2: 4, 3: 5 }
+
+/**
+ * Ligar cada autor a um conceito dele. No nível 3 sobram dois conceitos de outros autores, que não servem a ninguém.
+ * (Os termos de conceito são únicos no tema, então cada ligação tem uma só resposta.)
+ */
+export function gerarLigarConceito(rng: Rng, nivel: Nivel, autores: Autor[]): InstanciaLigar<DadosAutor> {
+  const escolhidos = embaralhar(rng, autores.filter((a) => a.conceitos.length > 0)).slice(0, QUANTOS[nivel])
+  const par = escolhidos.map((a) => ({ a, c: escolher(rng, a.conceitos) }))
+  const sobra = nivel === 3 ? embaralhar(rng, autores.filter((a) => !escolhidos.some((e) => e.id === a.id)).flatMap((a) => a.conceitos)).slice(0, 2) : []
+  const direita = embaralhar(rng, [...par.map(({ c }) => ({ id: c.termo, rotulo: c.termo })), ...sobra.map((c) => ({ id: c.termo, rotulo: c.termo }))])
+  return {
+    titulo: 'Autor e conceito',
+    enunciado: `Ligue cada autor a um conceito dele. ${nivel === 3 ? 'Atenção: há conceitos que não pertencem a nenhum destes autores.' : 'Cada conceito serve a um único autor.'}`,
+    esquerda: escolhidos.map((a) => ({ id: a.id, rotulo: a.nome })),
+    direita,
+    certa: Object.fromEntries(par.map(({ a, c }) => [a.id, c.termo])),
+    porque: Object.fromEntries(par.map(({ a, c }) => [a.id, `${c.termo} é um conceito de ${a.nome}: ${c.sentido}`])),
+    nivel,
+    dicas: ['Pense na ideia central de cada autor e no assunto de suas obras.', `Um deles: ${par[0]?.a.nome} (${par[0]?.a.tradicao}): ${par[0]?.a.resumo}`, 'Elimine os conceitos que já têm dono e veja o que sobrou.'],
+  }
+}
+
+/** Ligar cada autor à sua corrente (tradição). Cada corrente é de um só autor do tema. */
+export function gerarLigarTradicao(rng: Rng, nivel: Nivel, autores: Autor[]): InstanciaLigar<DadosAutor> {
+  const escolhidos = embaralhar(rng, autores).slice(0, QUANTOS[nivel])
+  const sobra = nivel === 3 ? embaralhar(rng, autores.filter((a) => !escolhidos.some((e) => e.id === a.id))).slice(0, 2) : []
+  const direita = embaralhar(rng, [...escolhidos, ...sobra].map((a) => ({ id: a.id, rotulo: a.tradicao })))
+  return {
+    titulo: 'Autor e corrente',
+    enunciado: `Ligue cada autor à corrente a que ele pertence. ${nivel === 3 ? 'Atenção: há correntes que não pertencem a nenhum destes autores.' : 'Cada corrente serve a um único autor.'}`,
+    esquerda: escolhidos.map((a) => ({ id: a.id, rotulo: a.nome })),
+    direita,
+    certa: Object.fromEntries(escolhidos.map((a) => [a.id, a.id])),
+    porque: Object.fromEntries(escolhidos.map((a) => [a.id, `${a.nome} pertence à corrente: ${a.tradicao}. ${a.resumo}`])),
+    nivel,
+    dicas: ['O nome da corrente costuma indicar o método ou o assunto principal do autor.', `Um deles: ${escolhidos[0]?.nome}: ${escolhidos[0]?.resumo}`, 'Compare o resumo de cada autor com o nome da corrente.'],
+  }
 }
