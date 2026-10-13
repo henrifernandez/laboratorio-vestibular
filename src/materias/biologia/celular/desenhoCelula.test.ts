@@ -1,5 +1,5 @@
 import { presentesEm, type TipoCelular } from './calculo'
-import { PECAS, caixaDaPeca, caixaDoRotulo, dentroDaCelula, encostam, type Caixa } from './desenhoCelula'
+import { ESCALA_MAX_ROTULO, PECAS, caixaDaPeca, caixaDoRotulo, dentroDaCelula, encostam, type Caixa } from './desenhoCelula'
 
 const TIPOS: TipoCelular[] = ['animal', 'vegetal', 'bacteria']
 const cantos = (c: Caixa) => [
@@ -18,19 +18,21 @@ describe('Desenho das células', () => {
     expect([...desenhadas].sort()).toEqual(internas.sort())
     for (const id of desenhadas) if (id !== 'vacuolo') expect(PECAS[tipo].some((p) => p.id === id && p.rotulo), id).toBe(true)
   })
-  it.each(TIPOS)('%s: estruturas e rótulos ficam dentro da célula', (tipo) => {
-    for (const p of PECAS[tipo]) {
-      const caixas = [caixaDaPeca(p), caixaDoRotulo(p)].filter((c): c is Caixa => c !== null)
-      for (const c of caixas) for (const [x, y] of cantos(c)) expect(dentroDaCelula(tipo, x as number, y as number), `${p.id} (${x}, ${y})`).toBe(true)
-    }
-  })
-  it.each(TIPOS)('%s: nenhuma estrutura encosta em outra, e nenhum rótulo cobre estrutura ou outro rótulo', (tipo) => {
-    const org = PECAS[tipo].map(caixaDaPeca)
-    const rot = PECAS[tipo].map(caixaDoRotulo).filter((c): c is Caixa => c !== null)
-    for (let i = 0; i < org.length; i++) for (let j = i + 1; j < org.length; j++) expect(encostam(org[i] as Caixa, org[j] as Caixa, 3), `${org[i]?.id} × ${org[j]?.id}`).toBe(false)
-    for (let i = 0; i < rot.length; i++) {
-      for (let j = i + 1; j < rot.length; j++) expect(encostam(rot[i] as Caixa, rot[j] as Caixa, 3), `rótulos ${rot[i]?.id} × ${rot[j]?.id}`).toBe(false)
-      for (const o of org) expect(encostam(rot[i] as Caixa, o, 2), `rótulo ${rot[i]?.id} × ${o.id}`).toBe(false)
-    }
+  describe.each([1, ESCALA_MAX_ROTULO])('com os nomes na escala %s', (escala) => {
+    it.each(TIPOS)('%s: estruturas e rótulos ficam dentro da célula', (tipo) => {
+      for (const p of PECAS[tipo]) {
+        const caixas = [caixaDaPeca(p), caixaDoRotulo(p, escala)].filter((c): c is Caixa => c !== null)
+        for (const c of caixas) for (const [x, y] of cantos(c)) expect(dentroDaCelula(tipo, x as number, y as number), `${p.id} (${x}, ${y})`).toBe(true)
+      }
+    })
+    it.each(TIPOS)('%s: nenhuma estrutura encosta em outra, e nenhum rótulo cobre estrutura ou outro rótulo', (tipo) => {
+      const org = PECAS[tipo].map(caixaDaPeca)
+      const rot = PECAS[tipo].map((p) => caixaDoRotulo(p, escala)).filter((c): c is Caixa => c !== null)
+      for (let i = 0; i < org.length; i++) for (let j = i + 1; j < org.length; j++) expect(encostam(org[i] as Caixa, org[j] as Caixa, 3), `${org[i]?.id} × ${org[j]?.id}`).toBe(false)
+      for (let i = 0; i < rot.length; i++) {
+        for (let j = i + 1; j < rot.length; j++) expect(encostam(rot[i] as Caixa, rot[j] as Caixa, 3), `rótulos ${rot[i]?.id} × ${rot[j]?.id}`).toBe(false)
+        for (const o of org) expect(encostam(rot[i] as Caixa, o, 2), `rótulo ${rot[i]?.id} × ${o.id}`).toBe(false)
+      }
+    })
   })
 })

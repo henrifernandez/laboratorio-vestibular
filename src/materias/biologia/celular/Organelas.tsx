@@ -1,8 +1,10 @@
 import type { KeyboardEvent, ReactNode } from 'react'
+import { fonteLegivel, useLargura } from '@/lib/useLargura'
 import { ESTRUTURAS, type Estrutura, type TipoCelular } from './calculo'
 import {
   ALTURA_ROTULO,
   BACTERIA,
+  ESCALA_MAX_ROTULO,
   FONTE_ROTULO,
   NOME_CURTO,
   PECAS,
@@ -237,7 +239,7 @@ function Centriolos({ cor }: { cor: string }) {
   )
 }
 
-const VACUOLO = caminhoBolha(59, 43, [
+const VACUOLO = caminhoBolha(53, 38, [
   [0.035, 3, 0.4],
   [0.025, 5, 1.7],
 ])
@@ -343,9 +345,9 @@ const NUCLEOIDE = (() => {
 function Nucleoide() {
   return (
     <g pointerEvents="none">
-      <path d={NUCLEOIDE} transform="translate(180 134)" fill="none" stroke="var(--cel-nucleo)" strokeWidth={1.4} strokeLinejoin="round" />
-      <text x={180} y={176} textAnchor="middle" fontSize={10} fill="var(--ink-muted)">
-        Nucleoide: DNA sem envoltório
+      <path d={NUCLEOIDE} transform="translate(180 142)" fill="none" stroke="var(--cel-nucleo)" strokeWidth={1.4} strokeLinejoin="round" />
+      <text x={180} y={183} textAnchor="middle" fontSize={10} fill="var(--ink-muted)">
+        Nucleoide (DNA solto)
       </text>
     </g>
   )
@@ -362,8 +364,11 @@ export function CelulaSvg({ tipo, selecionada, onSelecionar }: { tipo: TipoCelul
     }
   }
   const titulo = tipo === 'animal' ? 'célula animal' : tipo === 'vegetal' ? 'célula vegetal' : 'célula bacteriana'
+  // em tela estreita o desenho encolhe junto com o texto; os nomes crescem um pouco (até onde o teste garante que cabem)
+  const [ref, largura] = useLargura<SVGSVGElement>()
+  const escala = Math.min(ESCALA_MAX_ROTULO, Math.max(1, fonteLegivel(FONTE_ROTULO, largura, 360, 10) / FONTE_ROTULO))
   return (
-    <svg viewBox={QUADRO[tipo]} role="group" aria-label={`Desenho esquemático de uma ${titulo}; as estruturas podem ser escolhidas pelos botões abaixo`} className="mx-auto block w-full max-w-xl">
+    <svg ref={ref} viewBox={QUADRO[tipo]} role="group" aria-label={`Desenho esquemático de uma ${titulo}; as estruturas podem ser escolhidas pelos botões abaixo`} className="mx-auto block w-full max-w-xl">
       <Contorno tipo={tipo} sel={selecionada} onSelecionar={onSelecionar} />
       {PECAS[tipo].map((p, i) => {
         const est = ESTRUTURAS.find((e) => e.id === p.id) as Estrutura
@@ -380,17 +385,54 @@ export function CelulaSvg({ tipo, selecionada, onSelecionar }: { tipo: TipoCelul
       })}
       {PECAS[tipo].map((p, i) => {
         if (!p.rotulo) return null
-        const w = larguraRotulo(p.id)
+        const w = larguraRotulo(p.id, escala)
+        const h = ALTURA_ROTULO * escala
         const ativa = selecionada === p.id
         return (
           <g key={`r${i}`} pointerEvents="none">
-            <rect x={p.rotulo.x - w / 2} y={p.rotulo.y - ALTURA_ROTULO / 2} width={w} height={ALTURA_ROTULO} rx={ALTURA_ROTULO / 2} fill="var(--surface)" fillOpacity={0.9} stroke={ativa ? 'var(--accent)' : 'var(--line-strong)'} strokeWidth={ativa ? 1.6 : 0.8} />
-            <text x={p.rotulo.x} y={p.rotulo.y} dy="0.35em" textAnchor="middle" fontSize={FONTE_ROTULO} fontWeight={600} fill="var(--ink)">
+            <rect x={p.rotulo.x - w / 2} y={p.rotulo.y - h / 2} width={w} height={h} rx={h / 2} fill="var(--surface)" fillOpacity={0.9} stroke={ativa ? 'var(--accent)' : 'var(--line-strong)'} strokeWidth={ativa ? 1.6 : 0.8} />
+            <text x={p.rotulo.x} y={p.rotulo.y} dy="0.35em" textAnchor="middle" fontSize={FONTE_ROTULO * escala} fontWeight={600} fill="var(--ink)">
               {NOME_CURTO[p.id]}
             </text>
           </g>
         )
       })}
+    </svg>
+  )
+}
+
+/* ------------------------------------------------------------------ ícones (botões e ficha) */
+
+const BOLHA_ICONE = caminhoBolha(25, 18, [[0.05, 3, 0.4]])
+
+/** Miniatura de uma estrutura (a mesma figura do desenho, num quadrado), para os botões e para a ficha. */
+export function IconeEstrutura({ id, tamanho = 36 }: { id: string; tamanho?: number }) {
+  const cor = COR[id] ?? 'var(--ink)'
+  const [w, h] = TAMANHO[id] ?? [40, 40]
+  const lado = id === 'vacuolo' || id === 'membrana' || id === 'parede' ? 56 : Math.max(w, h) + 8
+  let figura: ReactNode
+  if (id === 'vacuolo') figura = <path d={BOLHA_ICONE} fill={cor} fillOpacity={0.16} stroke={cor} strokeWidth={2.4} />
+  else if (id === 'membrana')
+    figura = (
+      <>
+        <path d="M-24 -9 C-12 -15 12 -3 24 -9" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />
+        <path d="M-24 9 C-12 3 12 15 24 9" fill="none" stroke="var(--ink)" strokeWidth={3} strokeLinecap="round" />
+      </>
+    )
+  else if (id === 'parede')
+    figura = (
+      <>
+        <rect x={-24} y={-17} width={48} height={34} rx={9} fill={COR.parede} fillOpacity={0.32} stroke={COR.parede} strokeWidth={3} />
+        <rect x={-17} y={-10} width={34} height={20} rx={5} fill="var(--surface)" stroke="var(--ink)" strokeWidth={2} />
+      </>
+    )
+  else {
+    const Forma = FORMAS[id] as (p: { cor: string }) => ReactNode
+    figura = <Forma cor={cor} />
+  }
+  return (
+    <svg viewBox={`${-lado / 2} ${-lado / 2} ${lado} ${lado}`} width={tamanho} height={tamanho} aria-hidden="true" focusable="false" className="shrink-0">
+      {figura}
     </svg>
   )
 }

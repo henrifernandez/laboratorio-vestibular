@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { InstanciaMulti, VisualProps } from '@/desafios/simples'
 import { ESTRUTURAS, FASES_MEIOSE, FASES_MITOSE, TRANSPORTES, contagem, presentesEm, type Estrutura, type TipoCelular, type TipoDivisao } from './calculo'
-import { CelulaSvg } from './Organelas'
+import { CelulaSvg, IconeEstrutura } from './Organelas'
 import { ALTURA, LARGURA, desenhar, descreverDesenho, type CelulaDesenho, type Cromo } from './desenhoDivisao'
 import type { DadosFase } from './geradoresDivisao'
 import type { DadosMembrana, DadosTransporte } from './geradores'
@@ -141,45 +141,59 @@ export function FichaEstrutura({ id, tipo }: { id: string | null; tipo: TipoCelu
   const e = ESTRUTURAS.find((x) => x.id === id) as Estrutura
   const onde = (Object.keys(e.presente) as TipoCelular[]).filter((t) => e.presente[t]).map((t) => NOME_TIPO[t])
   return (
-    <div className="grid gap-1" aria-live="polite">
-      <h3 className="m-0 text-base">{e.nome}</h3>
-      <p className="m-0">
-        {e.nome} {e.funcao}.
-      </p>
+    <div className="grid gap-2" aria-live="polite">
+      <div className="flex items-start gap-3">
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-[var(--line)] bg-[var(--cel-citoplasma)]">
+          <IconeEstrutura id={e.id} tamanho={44} />
+        </span>
+        <div className="grid gap-1">
+          <h3 className="m-0 text-base">{e.nome}</h3>
+          <p className="m-0">
+            {e.nome} {e.funcao}.
+          </p>
+        </div>
+      </div>
+      <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+        <li className="chip">Membranas: {e.membranas === 0 ? 'nenhuma' : e.membranas}</li>
+        <li className="chip">DNA próprio: {e.dnaProprio ? 'sim (origem endossimbiótica)' : 'não'}</li>
+      </ul>
       <p className="m-0 text-sm text-[var(--ink-muted)]">
-        Está em: {onde.join(', ')}. Membranas: {e.membranas === 0 ? 'nenhuma' : e.membranas}. DNA próprio: {e.dnaProprio ? 'sim (origem endossimbiótica)' : 'não'}.
-        {!e.presente[tipo] && ' (Não existe no tipo de célula mostrado.)'}
+        Está em: {onde.join(', ')}.{!e.presente[tipo] && ' (Não existe no tipo de célula mostrado.)'}
       </p>
     </div>
   )
 }
 
-/** Desenho + botões (acesso por teclado) + ficha. */
+/** Tipo de célula, desenho, ficha da estrutura escolhida (logo abaixo do desenho, para não ficar fora da tela) e botões com miniaturas (acesso por teclado). */
 export function PainelCelula({ tipo, selecionada, onSelecionar, onTipo }: { tipo: TipoCelular; selecionada: string | null; onSelecionar: (id: string) => void; onTipo?: (t: TipoCelular) => void }) {
   const lista = presentesEm(tipo)
   return (
     <div className="grid gap-3">
       {onTipo && (
-        <div role="group" aria-label="Tipo de célula" className="flex flex-wrap gap-2">
+        <div role="group" aria-label="Tipo de célula" className="grid grid-cols-3 gap-2">
           {TIPOS.map((t) => (
-            <button key={t.id} type="button" aria-pressed={t.id === tipo} className={`btn ${t.id === tipo ? 'btn-primario' : ''}`} onClick={() => onTipo(t.id)}>
+            <button key={t.id} type="button" aria-pressed={t.id === tipo} className={`btn px-2 ${t.id === tipo ? 'btn-primario' : ''}`} onClick={() => onTipo(t.id)}>
               {t.rotulo}
             </button>
           ))}
         </div>
       )}
-      <div className="cartao p-3">
+      <div className="cartao p-1.5 sm:p-3">
         <CelulaSvg tipo={tipo} selecionada={selecionada} onSelecionar={onSelecionar} />
       </div>
-      <div role="group" aria-label="Estruturas desta célula" className="flex flex-wrap gap-2">
+      <div className="cartao min-h-[7.5rem] p-3">
+        <FichaEstrutura id={selecionada} tipo={tipo} />
+      </div>
+      <div role="group" aria-label="Estruturas desta célula" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {lista.map((e) => (
-          <button key={e.id} type="button" aria-pressed={selecionada === e.id} className={`btn ${selecionada === e.id ? 'btn-primario' : ''}`} onClick={() => onSelecionar(e.id)}>
-            {e.nome}
+          <button key={e.id} type="button" aria-pressed={selecionada === e.id} className={`btn !justify-start !gap-2 !px-2 text-left !text-[0.8125rem] !leading-tight ${selecionada === e.id ? 'btn-primario' : ''}`} onClick={() => onSelecionar(e.id)}>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-[var(--cel-citoplasma)]">
+              <IconeEstrutura id={e.id} tamanho={30} />
+            </span>
+            {/* hífen suave: se a palavra não couber no botão estreito, quebra em "endoplas-mático" e não no meio de uma sílaba */}
+            <span className="min-w-0 [overflow-wrap:anywhere]">{e.nome.replace('endoplasmático', 'endoplas­mático')}</span>
           </button>
         ))}
-      </div>
-      <div className="cartao p-3">
-        <FichaEstrutura id={selecionada} tipo={tipo} />
       </div>
     </div>
   )

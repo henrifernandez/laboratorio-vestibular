@@ -14,10 +14,12 @@ export const ALTURA_CEL = 280
 export const QUADRO: Record<TipoCelular, string> = {
   animal: `0 0 ${LARGURA_CEL} ${ALTURA_CEL}`,
   vegetal: `0 0 ${LARGURA_CEL} ${ALTURA_CEL}`,
-  bacteria: `0 56 ${LARGURA_CEL} 168`,
+  bacteria: `0 46 ${LARGURA_CEL} 200`,
 }
 export const FONTE_ROTULO = 10.5
 export const ALTURA_ROTULO = 16
+/** Em telas estreitas os nomes crescem até este fator, para continuarem legíveis; o teste confere que ainda cabem. */
+export const ESCALA_MAX_ROTULO = 1.2
 
 export const NOME_CURTO: Record<string, string> = {
   nucleo: 'Núcleo',
@@ -43,7 +45,7 @@ export const TAMANHO: Record<string, readonly [number, number]> = {
   peroxissomo: [26, 26],
   ribossomo: [44, 30],
   centriolo: [40, 40],
-  vacuolo: [128, 96],
+  vacuolo: [114, 84],
 }
 
 export interface Peca {
@@ -56,32 +58,32 @@ export interface Peca {
 
 export const PECAS: Record<TipoCelular, Peca[]> = {
   animal: [
-    { id: 'nucleo', x: 112, y: 146, rotulo: { x: 112, y: 193 } },
-    { id: 'mitocondria', x: 246, y: 64, rotulo: { x: 246, y: 91 } },
-    { id: 'mitocondria', x: 234, y: 228 },
-    { id: 'rer', x: 108, y: 222, rotulo: { x: 171, y: 222 } },
-    { id: 'rel', x: 282, y: 192, rotulo: { x: 282, y: 167 } },
-    { id: 'golgi', x: 292, y: 120, rotulo: { x: 292, y: 146 } },
-    { id: 'peroxissomo', x: 160, y: 58, rotulo: { x: 160, y: 82 } },
-    { id: 'ribossomo', x: 76, y: 74, rotulo: { x: 76, y: 100 } },
-    { id: 'centriolo', x: 204, y: 132, rotulo: { x: 204, y: 163 } },
+    { id: 'nucleo', x: 130, y: 114, rotulo: { x: 130, y: 64.9 } },
+    { id: 'mitocondria', x: 290, y: 102, rotulo: { x: 290, y: 131.1 } },
+    { id: 'mitocondria', x: 202, y: 166 },
+    { id: 'rer', x: 176, y: 228, rotulo: { x: 176, y: 199.9 } },
+    { id: 'rel', x: 60, y: 108, rotulo: { x: 60, y: 135.1 } },
+    { id: 'golgi', x: 202, y: 116, rotulo: { x: 202, y: 87.9 } },
+    { id: 'peroxissomo', x: 268, y: 174, rotulo: { x: 268, y: 200.1 } },
+    { id: 'ribossomo', x: 138, y: 170, rotulo: { x: 68.8, y: 170 } },
+    { id: 'centriolo', x: 190, y: 54, rotulo: { x: 247, y: 54 } },
   ],
   vegetal: [
-    { id: 'vacuolo', x: 198, y: 140 },
-    { id: 'nucleo', x: 68, y: 132, rotulo: { x: 68, y: 179 } },
-    { id: 'cloroplasto', x: 300, y: 78, rotulo: { x: 300, y: 106 } },
-    { id: 'cloroplasto', x: 302, y: 162 },
-    { id: 'cloroplasto', x: 292, y: 226 },
-    { id: 'mitocondria', x: 120, y: 226, rotulo: { x: 120, y: 199 } },
-    { id: 'rer', x: 96, y: 58, rotulo: { x: 96, y: 84 } },
-    { id: 'rel', x: 156, y: 52, rotulo: { x: 156, y: 77 } },
-    { id: 'golgi', x: 52, y: 226, rotulo: { x: 52, y: 200 } },
-    { id: 'peroxissomo', x: 226, y: 50, rotulo: { x: 226, y: 74 } },
-    { id: 'ribossomo', x: 198, y: 228, rotulo: { x: 198, y: 202 } },
+    { id: 'vacuolo', x: 190, y: 142 },
+    { id: 'nucleo', x: 84, y: 190, rotulo: { x: 84, y: 239.1 } },
+    { id: 'cloroplasto', x: 76, y: 52, rotulo: { x: 76, y: 82.1 } },
+    { id: 'cloroplasto', x: 292, y: 230 },
+    { id: 'cloroplasto', x: 296, y: 90 },
+    { id: 'mitocondria', x: 168, y: 52, rotulo: { x: 168, y: 81.1 } },
+    { id: 'rer', x: 294, y: 126, rotulo: { x: 294, y: 154.1 } },
+    { id: 'rel', x: 230, y: 224, rotulo: { x: 230, y: 196.9 } },
+    { id: 'golgi', x: 164, y: 232, rotulo: { x: 164, y: 203.9 } },
+    { id: 'peroxissomo', x: 246, y: 82, rotulo: { x: 246, y: 55.9 } },
+    { id: 'ribossomo', x: 76, y: 134, rotulo: { x: 76, y: 105.9 } },
   ],
   bacteria: [
-    { id: 'ribossomo', x: 82, y: 140 },
-    { id: 'ribossomo', x: 276, y: 124, rotulo: { x: 276, y: 150 } },
+    { id: 'ribossomo', x: 84, y: 106, rotulo: { x: 84, y: 134.1 } },
+    { id: 'ribossomo', x: 294, y: 160 },
   ],
 }
 
@@ -95,8 +97,8 @@ export const VEGETAL = {
   membrana: { x: 22, y: 32, w: 316, h: 220, r: 12 },
 } as const
 export const BACTERIA = {
-  parede: { x: 28, y: 80, w: 304, h: 120, r: 60 },
-  membrana: { x: 37, y: 89, w: 286, h: 102, r: 51 },
+  parede: { x: 28, y: 70, w: 304, h: 148, r: 56 },
+  membrana: { x: 37, y: 79, w: 286, h: 130, r: 47 },
 } as const
 
 /** Contorno da superelipse com uma ondulação leve (membrana de célula animal não é lisa). */
@@ -163,12 +165,13 @@ export const caixaDaPeca = (p: Peca): Caixa => {
   return { id: p.id, x0: p.x - w / 2, y0: p.y - h / 2, x1: p.x + w / 2, y1: p.y + h / 2 }
 }
 
-export const larguraRotulo = (id: string) => larguraTexto(NOME_CURTO[id] as string, FONTE_ROTULO, true) + 10
+export const larguraRotulo = (id: string, escala = 1) => larguraTexto(NOME_CURTO[id] as string, FONTE_ROTULO * escala, true) + 10 * escala
 
-export const caixaDoRotulo = (p: Peca): Caixa | null => {
+export const caixaDoRotulo = (p: Peca, escala = 1): Caixa | null => {
   if (!p.rotulo) return null
-  const w = larguraRotulo(p.id)
-  return { id: p.id, x0: p.rotulo.x - w / 2, y0: p.rotulo.y - ALTURA_ROTULO / 2, x1: p.rotulo.x + w / 2, y1: p.rotulo.y + ALTURA_ROTULO / 2 }
+  const w = larguraRotulo(p.id, escala)
+  const h = ALTURA_ROTULO * escala
+  return { id: p.id, x0: p.rotulo.x - w / 2, y0: p.rotulo.y - h / 2, x1: p.rotulo.x + w / 2, y1: p.rotulo.y + h / 2 }
 }
 
 /** Duas caixas ficam a menos de `folga` uma da outra? */
