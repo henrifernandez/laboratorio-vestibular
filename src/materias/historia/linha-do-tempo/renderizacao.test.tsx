@@ -36,7 +36,9 @@ describe('Linha do tempo (componente)', () => {
     expect(nomes.some((n) => n.startsWith('Invenção da escrita'))).toBe(true)
     expect(container.querySelectorAll('div[title^="Idade Antiga"]').length).toBe(1)
     expect(container.querySelectorAll('div[title^="Idade Média"]').length).toBe(1)
-    expect(container.textContent).toContain('3000 a.C.')
+    expect(container.textContent).toContain('2000 a.C.')
+    expect(container.textContent).toContain('a escala está comprimida')
+    expect(container.textContent).toContain('comprimido ◂')
     expect(container.textContent).toContain('Mostrando de 3600 a.C. a 2030')
   })
   it('ao aproximar numa janela curta, todos os acontecimentos do período aparecem', () => {

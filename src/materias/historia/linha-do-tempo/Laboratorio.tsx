@@ -9,7 +9,7 @@ import { LaboratorioTelas } from '@/sim/LaboratorioTelas'
 import { PainelDeVisibilidade } from '@/sim/PainelDeVisibilidade'
 import { useAnimacao } from '@/sim/useAnimacao'
 import { NOME_TIPO } from '@/conteudo/historia/tipos'
-import { VISTA_MODERNA, VISTA_TOTAL, anoFinal, cadeia, deslocar, emCurso, eraDoAno, limitarVista, vistaParaEvento, vistaParaIntervalo, zoomEm, type NoCadeia, type Vista } from './calculo'
+import { VISTA_MODERNA, VISTA_TOTAL, anoFinal, cadeia, deslocarPorPixels, emCurso, eraDoAno, limitarVista, vistaParaEvento, vistaParaIntervalo, zoomEm, type NoCadeia, type Vista } from './calculo'
 import { DEFINICOES_HISTORIA } from './definicoes'
 import { LinhaDoTempo, COR_TIPO, ICONE_TIPO } from './LinhaDoTempo'
 import { EventoCard, FaixasComCursor, LadoALado, LegendaLinha, PeriodosRapidos } from './Visuais'
@@ -50,10 +50,10 @@ function TelaLinha() {
         <button type="button" className="btn" onClick={() => mudarVista(zoomEm(vista, 0.5, 1.4))}>
           <ZoomOut size={18} aria-hidden="true" /> Afastar
         </button>
-        <button type="button" className="btn" aria-label="Mover para antes" onClick={() => mudarVista(deslocar(vista, -vista.s * 0.3))}>
+        <button type="button" className="btn" aria-label="Mover para antes" onClick={() => mudarVista(deslocarPorPixels(vista, -0.3, 1))}>
           <ChevronLeft size={18} aria-hidden="true" /> Antes
         </button>
-        <button type="button" className="btn" aria-label="Mover para depois" onClick={() => mudarVista(deslocar(vista, vista.s * 0.3))}>
+        <button type="button" className="btn" aria-label="Mover para depois" onClick={() => mudarVista(deslocarPorPixels(vista, 0.3, 1))}>
           Depois <ChevronRight size={18} aria-hidden="true" />
         </button>
         <button type="button" className="btn" onClick={() => mudarVista(VISTA_TOTAL)}>

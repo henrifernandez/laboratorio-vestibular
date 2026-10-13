@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperti
 import { Coins, Landmark, Palette, Swords, Users, type LucideIcon } from 'lucide-react'
 import { ANO_MAX, ANO_MIN } from '@/conteudo/historia/linhaDoTempo'
 import { formatarAno, rotuloAno, type Acontecimento, type Era, type TipoEvento } from '@/conteudo/historia/tipos'
-import { VISTA_TOTAL, deslocar, deslocarPorPixels, limitarVista, marcasDoEixo, posicaoDoAno, posicionarRotulos, rotuloEra, trechoVisivel, vistaParaIntervalo, zoomEm, type Vista } from './calculo'
+import { FIM_COMPRIMIDO, VISTA_TOTAL, deU, deslocarPorPixels, limitarVista, marcasDoEixo, paraU, posicaoDoAno, posicionarRotulos, rotuloEra, trechoVisivel, vistaParaIntervalo, zoomEm, type Vista } from './calculo'
 import { FichaRapida } from './FichaRapida'
 
 export const ICONE_TIPO: Record<TipoEvento, LucideIcon> = { politico: Landmark, economico: Coins, social: Users, cultural: Palette, guerra: Swords }
@@ -38,17 +38,20 @@ interface Props {
 
 /** Resumo do tempo todo, com a janela atual em destaque; clicar ou arrastar leva a janela para aquele ponto. */
 function Minimapa({ eras, vista, onVista, mostrarMundo, mostrarBrasil }: Pick<Props, 'eras' | 'vista' | 'onVista' | 'mostrarMundo' | 'mostrarBrasil'>) {
-  const total = ANO_MAX - ANO_MIN
-  const pct = (a: number) => `${((Math.min(ANO_MAX, Math.max(ANO_MIN, a)) - ANO_MIN) / total) * 100}%`
+  // escala comprimida: o trecho vazio da Antiguidade ocupa pouco espaço
+  const u0 = paraU(ANO_MIN)
+  const total = paraU(ANO_MAX) - u0
+  const frac = (a: number) => (paraU(Math.min(ANO_MAX, Math.max(ANO_MIN, a))) - u0) / total
+  const pct = (a: number) => `${frac(a) * 100}%`
   const ir = (ev: PointerReact<HTMLDivElement>) => {
     const r = ev.currentTarget.getBoundingClientRect()
-    const ano = ANO_MIN + ((ev.clientX - r.left) / r.width) * total
-    onVista(limitarVista({ c: ano, s: vista.s }))
+    const x = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width))
+    onVista(limitarVista({ c: deU(u0 + x * total), s: vista.s }))
   }
   const faixa = (regiao: 'mundo' | 'brasil') =>
     eras
       .filter((e) => e.regiao === regiao)
-      .map((e) => <div key={e.id} className="absolute inset-y-0" style={{ left: pct(e.inicio), width: `${((e.fim - e.inicio) / total) * 100}%`, background: e.cor, opacity: 0.55 }} />)
+      .map((e) => <div key={e.id} className="absolute inset-y-0" style={{ left: pct(e.inicio), width: `${(frac(e.fim) - frac(e.inicio)) * 100}%`, background: e.cor, opacity: 0.55 }} />)
   return (
     <div className="grid gap-1" aria-hidden="true">
       <div
@@ -61,11 +64,12 @@ function Minimapa({ eras, vista, onVista, mostrarMundo, mostrarBrasil }: Pick<Pr
       >
         {mostrarMundo && <div className="absolute inset-x-0 top-0 h-[42%]">{faixa('mundo')}</div>}
         {mostrarBrasil && <div className="absolute inset-x-0 bottom-0 h-[42%]">{faixa('brasil')}</div>}
-        <div className="absolute inset-y-0 rounded-sm border-2 border-[var(--ink)] bg-[var(--ink)]/10" style={{ left: pct(vista.c - vista.s / 2), width: `${Math.min(100, (vista.s / total) * 100)}%` }} />
+        <div aria-hidden="true" className="absolute inset-y-0 w-0 border-l border-dashed border-[var(--ink-muted)]" style={{ left: pct(FIM_COMPRIMIDO) }} />
+        <div className="absolute inset-y-0 rounded-sm border-2 border-[var(--ink)] bg-[var(--ink)]/10" style={{ left: pct(vista.c - vista.s / 2), width: `${Math.max(0.8, (frac(vista.c + vista.s / 2) - frac(vista.c - vista.s / 2)) * 100)}%` }} />
       </div>
       <div className="num flex justify-between gap-2 text-[11px] text-[var(--ink-muted)]">
         <span>{formatarAno(ANO_MIN)}</span>
-        <span className="text-center">Todo o período: clique ou arraste a moldura para ir a outra época</span>
+        <span className="text-center">Todo o período: clique ou arraste a moldura. Antes de 600 a.C. (tracejado) o tempo está comprimido</span>
         <span>hoje</span>
       </div>
     </div>
@@ -143,7 +147,8 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
       let nova: Vista
       if (ev.ctrlKey || ev.metaKey) {
         const r = el.getBoundingClientRect()
-        const ancora = vert ? (ev.clientY - r.top) / r.height : (ev.clientX - r.left) / r.width
+        const medida = vert ? r.height : r.width
+        const ancora = medida > 0 ? (vert ? ev.clientY - r.top : ev.clientX - r.left) / medida : 0.5
         const fator = Math.min(1.5, Math.max(0.66, Math.exp(ev.deltaY * escala * 0.0015)))
         nova = zoomEm(atual, Math.min(1, Math.max(0, ancora)), fator)
       } else {
@@ -196,7 +201,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         arrastou.current = true
         ev.currentTarget.setPointerCapture?.(ev.pointerId)
       }
-      if (g.moveu) onVista(limitarVista({ c: g.vista0.c - (delta / L) * g.vista0.s, s: g.vista0.s }))
+      if (g.moveu) onVista(deslocarPorPixels(g.vista0, -delta, L))
     }
   }
   const aoSoltar = (ev: PointerReact<HTMLDivElement>) => {
@@ -213,13 +218,13 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
 
   const aoTeclar = (ev: KeyboardEvent<HTMLDivElement>) => {
     if (ev.target !== ev.currentTarget) return
-    const passo = vista.s * 0.12
+    const passo = L * 0.12
     const avanca = vertical ? 'ArrowDown' : 'ArrowRight'
     const volta = vertical ? 'ArrowUp' : 'ArrowLeft'
     if (ev.key === '+' || ev.key === '=') onVista(zoomEm(vista, 0.5, 0.8))
     else if (ev.key === '-' || ev.key === '_') onVista(zoomEm(vista, 0.5, 1.25))
-    else if (ev.key === avanca) onVista(deslocar(vista, passo))
-    else if (ev.key === volta) onVista(deslocar(vista, -passo))
+    else if (ev.key === avanca) onVista(deslocarPorPixels(vista, passo, L))
+    else if (ev.key === volta) onVista(deslocarPorPixels(vista, -passo, L))
     else if (ev.key === 'Home') onVista(VISTA_TOTAL)
     else if (ev.key === 'Escape' && aberta) setAberta(null)
     else return
@@ -351,6 +356,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
   }
 
   const comprimentoGrade = vertical ? largura : altura
+  const cruzaComprimido = vista.c - vista.s / 2 < FIM_COMPRIMIDO && vista.c + vista.s / 2 > FIM_COMPRIMIDO
   return (
     <div className="grid gap-2">
       <div
@@ -391,6 +397,16 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
         {barra}
         {mostrarMundo && rotulosDe('mundo')}
         {mostrarBrasil && rotulosDe('brasil')}
+        {cruzaComprimido && (
+          <>
+            <div aria-hidden="true" className="pointer-events-none absolute border-dashed border-[var(--ink-muted)]" style={{ zIndex: 1, ...(vertical ? { top: p(FIM_COMPRIMIDO), left: 0, width: comprimentoGrade, borderTopWidth: 1 } : { left: p(FIM_COMPRIMIDO), top: 0, height: comprimentoGrade, borderLeftWidth: 1 }) }} />
+            {!vertical && p(FIM_COMPRIMIDO) > 100 && (
+              <span aria-hidden="true" className="pointer-events-none absolute z-[8] whitespace-nowrap rounded-full border border-[var(--line-strong)] bg-[var(--surface)] px-2 py-0.5 text-xs font-semibold text-[var(--ink-muted)]" style={{ right: L - p(FIM_COMPRIMIDO) + 6, top: 8 }}>
+                comprimido ◂
+              </span>
+            )}
+          </>
+        )}
         {ficha}
         {mostrarMundo && (
           <span aria-hidden="true" className="pointer-events-none absolute z-[8] rounded-full border border-[var(--line-strong)] bg-[var(--surface)] px-2 py-0.5 text-xs font-bold" style={{ left: 8, top: 8 }}>
@@ -416,6 +432,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
       )}
       <p className="m-0 text-sm text-[var(--ink-muted)]" aria-live="polite">
         Mostrando de {formatarAno(Math.round(vista.c - vista.s / 2))} a {formatarAno(Math.round(vista.c + vista.s / 2))}
+        {cruzaComprimido ? '. Antes de 600 a.C. a escala está comprimida (poucos acontecimentos): ali, o mesmo espaço mostra mais anos.' : ''}
         {ocultos > 0 ? `. ${ocultos} acontecimento${ocultos === 1 ? '' : 's'} não cabe${ocultos === 1 ? '' : 'm'} neste zoom: aproxime ou escolha um período para ver.` : '. Todos os acontecimentos desta janela estão visíveis.'}
       </p>
     </div>

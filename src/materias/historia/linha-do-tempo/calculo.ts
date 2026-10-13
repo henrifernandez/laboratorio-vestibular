@@ -31,6 +31,38 @@ export function emCurso(eventos: Acontecimento[], ano: number, folga = 0): Acont
 
 /* ------------------------------------------------------------------ vista (centro e extensão, em anos) */
 
+/**
+ * Escala do tempo, linear por trechos. Antes de 600 a.C. há poucos acontecimentos, e cada ano ocupa
+ * `d` vezes o espaço de um ano normal; assim o trecho vazio da Antiguidade fica compacto.
+ */
+export const SEGMENTOS_ESCALA: readonly { de: number; ate: number; d: number }[] = [
+  { de: ANO_MIN, ate: -600, d: 0.15 },
+  { de: -600, ate: ANO_MAX, d: 1 },
+]
+/** Último ano do trecho comprimido. */
+export const FIM_COMPRIMIDO = -600
+
+/** Ano → posição na escala (unidades em que 1 equivale a 1 ano no trecho normal). */
+export function paraU(ano: number): number {
+  let base = 0
+  for (const [i, s] of SEGMENTOS_ESCALA.entries()) {
+    if (ano <= s.ate || i === SEGMENTOS_ESCALA.length - 1) return base + (ano - s.de) * s.d
+    base += (s.ate - s.de) * s.d
+  }
+  return base
+}
+
+/** Posição na escala → ano (inversa de `paraU`). */
+export function deU(u: number): number {
+  let base = 0
+  for (const [i, s] of SEGMENTOS_ESCALA.entries()) {
+    const comprimento = (s.ate - s.de) * s.d
+    if (u <= base + comprimento || i === SEGMENTOS_ESCALA.length - 1) return s.de + (u - base) / s.d
+    base += comprimento
+  }
+  return ANO_MIN
+}
+
 export const EXTENSAO_MIN = 6
 export const EXTENSAO_MAX = ANO_MAX - ANO_MIN
 
@@ -61,19 +93,33 @@ export function limitarVista(v: Vista): Vista {
  * `fator` < 1 aproxima; > 1 afasta.
  */
 export function zoomEm(v: Vista, ancora: number, fator: number): Vista {
-  const s = limitar(v.s * fator, EXTENSAO_MIN, EXTENSAO_MAX)
-  const anoSobAncora = v.c - v.s / 2 + ancora * v.s
-  return limitarVista({ c: anoSobAncora - (ancora - 0.5) * s, s })
+  const uA = paraU(v.c - v.s / 2)
+  const span = paraU(v.c + v.s / 2) - uA
+  const u0 = uA + ancora * span
+  const novo = span * fator
+  const a = deU(u0 - ancora * novo)
+  const b = deU(u0 + (1 - ancora) * novo)
+  if (b - a >= EXTENSAO_MIN && b - a <= EXTENSAO_MAX) return limitarVista({ c: (a + b) / 2, s: b - a })
+  // nos limites de extensão, mantém o ano sob a âncora no lugar
+  const s = limitar(b - a, EXTENSAO_MIN, EXTENSAO_MAX)
+  return limitarVista({ c: deU(u0) - (ancora - 0.5) * s, s })
 }
 
 /** Desloca a vista (positivo = para o futuro). */
 export const deslocar = (v: Vista, anos: number): Vista => limitarVista({ c: v.c + anos, s: v.s })
 
 /**
- * Deslocamento pela roda do mouse ou pelo trackpad: `pixels` de rolagem viram anos na escala atual,
- * de modo que o conteúdo anda junto com o gesto (positivo = para o futuro).
+ * Deslocamento pelo gesto (roda, arraste, setas): `pixels` de um eixo de comprimento `L` viram tempo na
+ * escala atual, de modo que o conteúdo anda junto com o gesto (positivo = para o futuro).
  */
-export const deslocarPorPixels = (v: Vista, pixels: number, L: number): Vista => deslocar(v, (pixels / Math.max(1, L)) * v.s)
+export function deslocarPorPixels(v: Vista, pixels: number, L: number): Vista {
+  const uA = paraU(v.c - v.s / 2)
+  const uB = paraU(v.c + v.s / 2)
+  const dU = (pixels / Math.max(1e-6, L)) * (uB - uA)
+  const a = deU(uA + dU)
+  const b = deU(uB + dU)
+  return limitarVista({ c: (a + b) / 2, s: b - a })
+}
 
 /** Vista que mostra bem um intervalo, com uma folga nas pontas. */
 export function vistaParaIntervalo(inicio: number, fim: number, folga = 0.12): Vista {
@@ -88,26 +134,40 @@ export function vistaParaEvento(e: Pick<Acontecimento, 'inicio' | 'fim'>): Vista
 }
 
 /** Posição (px) de um ano ao longo de um eixo de comprimento `L`. */
-export const posicaoDoAno = (ano: number, v: Vista, L: number) => ((ano - (v.c - v.s / 2)) / v.s) * L
+export function posicaoDoAno(ano: number, v: Vista, L: number): number {
+  const uA = paraU(v.c - v.s / 2)
+  return ((paraU(ano) - uA) / (paraU(v.c + v.s / 2) - uA)) * L
+}
 
 /** Ano que corresponde a uma posição (px). */
-export const anoDaPosicao = (pos: number, v: Vista, L: number) => v.c - v.s / 2 + (pos / L) * v.s
+export function anoDaPosicao(pos: number, v: Vista, L: number): number {
+  const uA = paraU(v.c - v.s / 2)
+  return deU(uA + (pos / L) * (paraU(v.c + v.s / 2) - uA))
+}
 
 /** Passo "redondo" entre marcas do eixo, para ter de 3 a 8 marcas na tela. */
 export function passoDoEixo(extensao: number): number {
-  const candidatos = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]
+  const candidatos = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000]
   const alvo = extensao / 6
-  return candidatos.find((c) => c >= alvo) ?? 1000
+  return candidatos.find((c) => c >= alvo) ?? 5000
 }
 
 /** Anos que recebem marca no eixo dentro da vista. */
 export function marcasDoEixo(v: Vista): number[] {
-  const passo = passoDoEixo(v.s)
-  const ini = Math.ceil((v.c - v.s / 2) / passo) * passo
-  const fim = v.c + v.s / 2
+  const a = v.c - v.s / 2
+  const b = v.c + v.s / 2
+  const span = paraU(b) - paraU(a)
   const r: number[] = []
-  for (let a = ini; a <= fim; a += passo) r.push(a)
-  return r
+  // cada trecho da escala escolhe o próprio passo: onde o tempo está comprimido, as marcas são mais espaçadas
+  for (const seg of SEGMENTOS_ESCALA) {
+    const ini = Math.max(a, seg.de)
+    const fim = Math.min(b, seg.ate)
+    if (fim < ini) continue
+    // no trecho comprimido o passo tem teto de 2000 anos: sempre sobra uma marca de referência
+    const passo = Math.min(2000, passoDoEixo(span / seg.d))
+    for (let x = Math.ceil(ini / passo) * passo; x <= fim; x += passo) if (!r.includes(x || 0)) r.push(x || 0)
+  }
+  return r.sort((x, y) => x - y)
 }
 
 /* ------------------------------------------------------------------ posicionamento dos rótulos */

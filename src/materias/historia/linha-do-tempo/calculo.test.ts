@@ -5,6 +5,10 @@ import {
   VISTA_TOTAL,
   anoDaPosicao,
   deslocar,
+  deslocarPorPixels,
+  deU,
+  paraU,
+  VISTA_MODERNA,
   distanciaAnos,
   emCurso,
   eraDoAno,
@@ -111,6 +115,50 @@ describe('Vista, zoom e escala', () => {
       expect(marcas.length, `s=${s}`).toBeLessThanOrEqual(9)
       for (const m of marcas) expect(m % passo).toBe(0)
     }
+  })
+  it('escala comprimida: paraU e deU são inversas e o trecho antes de 600 a.C. ocupa pouco espaço', () => {
+    for (const ano of [ANO_MIN, -3000, -1000, -600, -599, 0, 476, 1500, ANO_MAX, 3000, -5000]) expect(deU(paraU(ano)), `${ano}`).toBeCloseTo(ano, 8)
+    // no trecho normal, 1 ano = 1 unidade; no comprimido, 0,15
+    expect(paraU(1900) - paraU(1800)).toBeCloseTo(100, 9)
+    expect(paraU(-1000) - paraU(-2000)).toBeCloseTo(150, 9)
+    // na vista completa, os 3000 anos antes de 600 a.C. ocupam pouco espaço
+    const v = VISTA_TOTAL
+    const comprimido = posicaoDoAno(-600, v, 1000) - posicaoDoAno(ANO_MIN, v, 1000)
+    expect(comprimido).toBeLessThan(160) // era 532 px na escala linear
+    expect(posicaoDoAno(ANO_MIN, v, 1000)).toBeCloseTo(0, 6)
+    expect(posicaoDoAno(ANO_MAX, v, 1000)).toBeCloseTo(1000, 6)
+    // monotônica
+    let ant = -Infinity
+    for (let a = ANO_MIN; a <= ANO_MAX; a += 50) {
+      const p = posicaoDoAno(a, v, 1000)
+      expect(p).toBeGreaterThan(ant)
+      ant = p
+    }
+  })
+  it('zoom e deslocamento atravessam o trecho comprimido sem perder o ano sob a âncora nem sair dos limites', () => {
+    const v = { c: -300, s: 1200 } // cruza 600 a.C.
+    for (const ancora of [0, 0.3, 0.5, 1])
+      for (const fator of [0.5, 0.8, 1.25]) {
+        const antes = anoDaPosicao(ancora * 1000, v, 1000)
+        const w = zoomEm(v, ancora, fator)
+        // a vista é arredondada a 0,01 ano, o que dá até ~0,02 ano de diferença no trecho comprimido
+        expect(Math.abs(anoDaPosicao(ancora * 1000, w, 1000) - antes), `âncora ${ancora} fator ${fator}`).toBeLessThan(0.1)
+      }
+    const p = deslocarPorPixels(v, -300, 1000)
+    expect(p.c).toBeLessThan(v.c)
+    const fim = deslocarPorPixels(VISTA_MODERNA, 100_000, 1000)
+    expect(fim.c + fim.s / 2).toBeLessThanOrEqual(ANO_MAX + 0.01)
+    // 100 px à direita (de 1000) = 10% da largura da janela em unidades da escala
+    const q = deslocarPorPixels({ c: 1800, s: 200 }, 100, 1000)
+    expect(q).toEqual({ c: 1820, s: 200 })
+  })
+  it('marcas do eixo atravessando o trecho comprimido: sem repetição, em ordem e com o passo do trecho', () => {
+    const m = marcasDoEixo(VISTA_TOTAL)
+    expect(m).toEqual([...new Set(m)].sort((a, b) => a - b))
+    expect(m).toContain(-2000) // referência no trecho comprimido
+    expect(m.filter((a) => a > -600).every((a) => a % 500 === 0)).toBe(true)
+    // dentro do trecho normal, nada mudou: 3 a 9 marcas e passo redondo
+    expect(marcasDoEixo({ c: 1850, s: 200 }).length).toBeGreaterThanOrEqual(3)
   })
   it('trecho visível de uma era: corta nas bordas e some quando está fora', () => {
     const vista = { c: 1700, s: 400 } // 1500 a 1900
