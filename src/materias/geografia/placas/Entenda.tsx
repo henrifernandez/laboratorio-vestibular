@@ -2,12 +2,17 @@ import { PASSOS_PLACAS, type VisualPlacas } from '@/conteudo/geografia/placas'
 import { EntendaPassos, type PassoEntenda } from '@/componentes/EntendaPassos'
 import type { IdLimite } from './calculo'
 import { AssoalhoDidatico, QuadroExemplos, QuadroLimites } from './Quadros'
-import { CamadasSvg, CorteSvg, FichaLimite, LegendaCorte } from './Visuais'
+import { CamadasSvg, CorteSvg, FichaLimite, LegendaCorte, LitosferaSvg } from './Visuais'
 
 function Visual({ v }: { v: VisualPlacas }) {
   switch (v.tipo) {
     case 'camadas':
-      return <CamadasSvg destaque={v.destaque} />
+      return (
+        <div className="grid gap-2">
+          <CamadasSvg destaque={v.destaque} />
+          <LitosferaSvg />
+        </div>
+      )
     case 'corte':
       return (
         <div className="grid gap-2">

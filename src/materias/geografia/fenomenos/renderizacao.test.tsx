@@ -35,6 +35,18 @@ describe('Visuais', () => {
     expect(nina).toContain('La Niña muito forte')
     expect(nina).toContain('fortes')
   })
+  it('no El Niño, a chuva migra para o leste, a Indonésia seca e os peixes da ressurgência somem', () => {
+    const nino = render(<EnsoSvg anomalia={2.2} />).container
+    expect(nino.textContent).toContain('seca na Indonésia')
+    expect(nino.querySelector('svg')?.getAttribute('aria-label')).toContain('sobre a Indonésia, o ar desce seco')
+    const normal = render(<EnsoSvg anomalia={0} />).container
+    expect(normal.textContent).not.toContain('seca na Indonésia')
+    // peixes: desenhados como caminhos com preenchimento translúcido de tinta
+    const peixes = (c: HTMLElement) => c.querySelectorAll('path[fill-opacity="0.55"]').length
+    expect(peixes(normal)).toBeGreaterThan(0)
+    expect(peixes(nino)).toBe(0)
+    expect(peixes(render(<EnsoSvg anomalia={-2} />).container)).toBeGreaterThan(peixes(normal))
+  })
   it('o gráfico de superfícies tem seis barras e as medidas reduzem o nível do centro', () => {
     const { container } = render(<GraficoSuperficies medidas={[]} />)
     expect(container.querySelectorAll('rect')).toHaveLength(6)

@@ -5,7 +5,7 @@ import { DEFINICOES_PLACAS } from './definicoes'
 import Entenda from './Entenda'
 import Laboratorio from './Laboratorio'
 import Resumo from './Resumo'
-import { AssoalhoSvg, CamadasSvg, CorteSvg } from './Visuais'
+import { AssoalhoSvg, CamadasSvg, CorteSvg, LitosferaSvg } from './Visuais'
 import { LIMITES, type IdLimite } from './calculo'
 
 const NIVEIS = [1, 2, 3] as const
@@ -26,6 +26,12 @@ describe('Visuais', () => {
     const { container } = render(<CorteSvg limite="transformante" progresso={1} />)
     expect(container.textContent).toContain('rio deslocado: 70')
     expect(container.querySelectorAll('g[stroke="var(--geo-frio)"] path')).toHaveLength(2)
+  })
+  it('o zoom da litosfera mostra crosta, litosfera de ~100 km e astenosfera, com régua em km', () => {
+    const { container } = render(<LitosferaSvg />)
+    expect(container.textContent).toContain('litosfera (~100 km) = a placa')
+    expect(container.textContent).toContain('astenosfera')
+    expect(container.textContent).toContain('300')
   })
   it('camadas e faixas de idade têm descrição acessível', () => {
     expect(render(<CamadasSvg />).container.querySelector('svg')?.getAttribute('aria-label')).toContain('núcleo interno sólido')

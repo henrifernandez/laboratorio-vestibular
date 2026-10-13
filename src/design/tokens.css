@@ -61,6 +61,9 @@
   --geo-quente: #c2371d;
   --geo-frio: #1f5fc4;
   --geo-brasil: #cfe3c4;
+  --geo-lito: #8f8a63;
+  --geo-sedimento: #e2cf8e;
+  --geo-vulcao: #6f5236;
 
   /* luz de lâmpada e cobre dos fios (Física) */
   --luz: #f6b40e;
@@ -138,6 +141,9 @@
     --geo-quente: #ff8a70;
     --geo-frio: #8ab4ff;
     --geo-brasil: #34502c;
+    --geo-lito: #6d6a48;
+    --geo-sedimento: #a8955c;
+    --geo-vulcao: #8a6a4a;
     --luz: #ffd54a;
     --cobre: #e0915e;
     --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
@@ -190,6 +196,9 @@
   --geo-quente: #ff8a70;
   --geo-frio: #8ab4ff;
   --geo-brasil: #34502c;
+  --geo-lito: #6d6a48;
+  --geo-sedimento: #a8955c;
+  --geo-vulcao: #8a6a4a;
   --luz: #ffd54a;
   --cobre: #e0915e;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
