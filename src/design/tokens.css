@@ -69,6 +69,19 @@
   --luz: #f6b40e;
   --cobre: #a8552a;
 
+  /* organelas no desenho da célula (Biologia) */
+  --cel-citoplasma: #f7eedf;
+  --cel-nucleo: #6b4fa0;
+  --cel-mito: #c2410c;
+  --cel-cloro: #2e7d32;
+  --cel-rer: #1f5fc4;
+  --cel-rel: #0e7490;
+  --cel-golgi: #a16207;
+  --cel-perox: #a21caf;
+  --cel-vacuolo: #2b7bb9;
+  --cel-parede: #8a6a2f;
+  --cel-ribossomo: #3b2f25;
+
   /* espaçamento, raios, sombras */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -146,6 +159,17 @@
     --geo-vulcao: #8a6a4a;
     --luz: #ffd54a;
     --cobre: #e0915e;
+    --cel-citoplasma: #2a241b;
+    --cel-nucleo: #b9a3e3;
+    --cel-mito: #fb9a6a;
+    --cel-cloro: #81d48a;
+    --cel-rer: #8ab4ff;
+    --cel-rel: #67d0e6;
+    --cel-golgi: #f2c35b;
+    --cel-perox: #e48af0;
+    --cel-vacuolo: #7cb9ea;
+    --cel-parede: #c9a46a;
+    --cel-ribossomo: #eadfcf;
     --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
   }
@@ -201,6 +225,17 @@
   --geo-vulcao: #8a6a4a;
   --luz: #ffd54a;
   --cobre: #e0915e;
+  --cel-citoplasma: #2a241b;
+  --cel-nucleo: #b9a3e3;
+  --cel-mito: #fb9a6a;
+  --cel-cloro: #81d48a;
+  --cel-rer: #8ab4ff;
+  --cel-rel: #67d0e6;
+  --cel-golgi: #f2c35b;
+  --cel-perox: #e48af0;
+  --cel-vacuolo: #7cb9ea;
+  --cel-parede: #c9a46a;
+  --cel-ribossomo: #eadfcf;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-2: 0 8px 22px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
 }
