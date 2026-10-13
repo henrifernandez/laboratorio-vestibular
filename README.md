@@ -1,6 +1,6 @@
 # Laboratório Vestibular
 
-Site de estudo interativo para o vestibular: cada matéria vira um laboratório em que você aprende **mexendo** nos conceitos (arrastar pontos, ajustar coeficientes, errar e ver o que muda), em vez de fazer simulados. Feito para a 1ª fase da Unicamp.
+Site de estudo interativo para o vestibular: cada matéria vira um laboratório em que você aprende **mexendo** nos conceitos (arrastar pontos, ajustar coeficientes, errar e ver o que muda), em vez de fazer simulados.
 
 Site em Vite + React + TypeScript. Funciona 100% sem conta (o progresso fica no `localStorage` do navegador). Opcionalmente, há login só com nome e senha, que guarda o progresso no servidor (funções em `api/`, ver "Contas" abaixo).
 

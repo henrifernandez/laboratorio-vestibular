@@ -64,7 +64,7 @@ export function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <footer className="border-t border-[var(--line)] py-6 text-sm text-[var(--ink-muted)]">
-        <div className="container-site">Material de estudo feito para a 1ª fase da Unicamp. Você pode estudar sem conta (o progresso fica neste navegador) ou entrar com nome e senha para guardá-lo em qualquer aparelho.</div>
+        <div className="container-site">Um site de estudo em que você aprende mexendo nos conceitos: cada tema tem uma explicação passo a passo, um laboratório interativo, desafios que explicam o seu erro e um resumo. Você pode estudar sem conta (o progresso fica neste navegador) ou entrar com nome e senha para guardá-lo em qualquer aparelho.</div>
       </footer>
     </>
   )
