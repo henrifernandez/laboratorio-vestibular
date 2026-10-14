@@ -262,7 +262,7 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
           <button
             type="button"
             aria-pressed={sel}
-            aria-label={`${e.titulo}, ${rotuloAno(e)}`}
+            aria-label={`${rotuloAno(e)} ${e.titulo}`}
             title={`${e.titulo} (${rotuloAno(e)})`}
             onClick={() => {
               // o clique que encerra um arraste não seleciona nada
@@ -278,7 +278,8 @@ export function LinhaDoTempo({ eventos, eras, vista, selecionado, onVista, onSel
               <span className="num flex items-center gap-1 text-xs font-bold">
                 {vertical && <Icone size={13} aria-hidden="true" style={{ color: COR_TIPO[e.tipo], flex: 'none' }} />}
                 {rotuloAno(e)}
-              </span>
+              </span>{' '}
+              {/* o espaço entre o ano e o título faz o texto visível coincidir com o nome acessível (WCAG 2.5.3) */}
               <span className={`block text-xs ${vertical ? 'line-clamp-4' : 'line-clamp-2'}`}>{e.titulo}</span>
             </span>
           </button>

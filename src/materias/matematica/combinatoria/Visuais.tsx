@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ChevronsDown, ChevronsUp } from 'lucide-react'
 import { criarRng } from '@/lib/rng'
+import { larguraTexto } from '@/lib/rotulos'
 import { combinacao, arranjo, fatorial, listarArranjos, listarCombinacoes } from './calculo'
 import { construirArvore, folhasFormadas, nosVisiveis, type NivelArvore } from './arvore'
 import { contar, sequencia } from './simulacao'
@@ -66,6 +67,8 @@ export function ArvorePossibilidades({ niveis, interativa = true, expandirTudo =
                 }}
                 style={{ cursor: interativa && temFilhos ? 'pointer' : 'default' }}
               >
+                {/* área de toque invisível: a linha inteira do nó, com o rótulo (a linha tem 26 unidades, cerca de 24 px na tela) */}
+                {interativa && temFilhos && <rect x={-12} y={-alturaLinha / 2} width={24 + (n.nivel > 0 ? larguraTexto(n.rotulo, 11) : 26)} height={alturaLinha} fill="transparent" />}
                 <circle r={n.nivel === 0 ? 8 : 7} fill={folha ? 'var(--accent)' : aberto ? 'var(--surface-2)' : 'var(--surface)'} stroke="var(--accent)" strokeWidth="2" />
                 {interativa && temFilhos && !aberto && (
                   <text textAnchor="middle" y="4" fontSize="11" fill="var(--accent)" fontWeight="700">

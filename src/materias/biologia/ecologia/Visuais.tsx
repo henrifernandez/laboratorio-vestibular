@@ -176,9 +176,9 @@ export function PiramideBarras({ titulo, itens, cor = 'var(--accent)' }: { titul
   const max = Math.max(...itens.map((i) => i.valor), 1e-12)
   const resumo = itens.map((i) => `${i.rotulo}: ${i.texto}`).join('; ')
   return (
-    <figure className="m-0 grid gap-1" role="img" aria-label={`${titulo}. ${resumo}`}>
+    <figure className="m-0 grid gap-1">
       <figcaption className="text-sm font-semibold text-[var(--ink-muted)]">{titulo}</figcaption>
-      <div className="grid gap-1.5">
+      <div role="img" aria-label={`${titulo}. ${resumo}`} className="grid gap-1.5">
         {[...itens].reverse().map((i) => (
           <div key={i.rotulo} className="grid grid-cols-[7.5rem_1fr] items-center gap-2">
             <div className="grid text-right leading-tight">

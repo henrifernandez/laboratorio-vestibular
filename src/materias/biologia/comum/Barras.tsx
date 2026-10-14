@@ -12,9 +12,9 @@ export interface ItemBarra {
 export function BarrasClasses({ titulo, itens, max = 100, unidade = '%' }: { titulo: string; itens: ItemBarra[]; max?: number; unidade?: string }) {
   const resumo = itens.map((i) => `${i.rotulo}: ${f(i.valor)} ${unidade}${i.esperado !== undefined ? ` (esperado ${f(i.esperado)} ${unidade})` : ''}`).join('; ')
   return (
-    <figure className="m-0 grid gap-1" role="img" aria-label={`${titulo}. ${resumo}`}>
+    <figure className="m-0 grid gap-1">
       <figcaption className="text-sm font-semibold text-[var(--ink-muted)]">{titulo}</figcaption>
-      <div className="grid gap-2">
+      <div role="img" aria-label={`${titulo}. ${resumo}`} className="grid gap-2">
         {itens.map((i) => (
           <div key={i.rotulo} className="grid grid-cols-[6.5rem_1fr] items-center gap-2">
             <span className="text-right text-sm font-semibold leading-tight">{i.rotulo}</span>

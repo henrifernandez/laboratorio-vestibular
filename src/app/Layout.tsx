@@ -3,12 +3,14 @@ import { useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { FlaskConical, Moon, Sun, UserRound } from 'lucide-react'
 import { useConta } from '@/conta/ContaContext'
+import { useRolagemTeclado } from '@/lib/useRolagemTeclado'
 import { useTema } from '@/lib/tema'
 
 export function Layout({ children }: { children: ReactNode }) {
   const { tema, alternar } = useTema()
   const conta = useConta()
   const { pathname } = useLocation()
+  useRolagemTeclado()
 
   useEffect(() => {
     window.scrollTo(0, 0)

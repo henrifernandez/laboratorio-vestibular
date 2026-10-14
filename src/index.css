@@ -102,6 +102,8 @@ p { margin: 0; text-wrap: pretty; }
   cursor: pointer;
   transition: transform var(--dur-rapida) var(--ease-mola), background var(--dur-rapida), border-color var(--dur-rapida);
 }
+/* títulos de blocos que abrem e fecham: alvo de toque de 44 px */
+summary { min-height: 44px; padding-block: 0.625rem; }
 .btn:hover { background: var(--surface-2); }
 .btn:active { transform: scale(0.97); }
 .btn[disabled] { opacity: 0.5; cursor: not-allowed; }

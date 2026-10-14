@@ -93,6 +93,7 @@ export default function PaginaTema() {
       </div>
 
       <div id="painel-aba" role="tabpanel" aria-labelledby={`aba-${aba}`} tabIndex={-1}>
+        <h2 className="sr-only">{ABAS.find((a) => a.id === aba)?.rotulo}</h2>
         {erro && <p role="alert">Não consegui carregar este tema. Recarregue a página.</p>}
         {!erro && !modulo && <p role="status" className="py-10 text-[var(--ink-muted)]">Carregando…</p>}
         {modulo && aba === 'entenda' && <modulo.Entenda />}

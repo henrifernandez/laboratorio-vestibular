@@ -24,8 +24,8 @@ describe('Linha do tempo (componente)', () => {
     expect(botoes.length).toBeGreaterThan(15)
     expect(botoes.length).toBeLessThan(EVENTOS.length)
     // um acontecimento de peso 1 de cada lado aparece na vista aberta
-    expect(botoes.some((b) => b.getAttribute('aria-label')?.startsWith('Independência do Brasil'))).toBe(true)
-    expect(botoes.some((b) => b.getAttribute('aria-label')?.startsWith('Primeira Guerra Mundial'))).toBe(true)
+    expect(botoes.some((b) => b.getAttribute('aria-label')?.includes('Independência do Brasil'))).toBe(true)
+    expect(botoes.some((b) => b.getAttribute('aria-label')?.includes('Primeira Guerra Mundial'))).toBe(true)
     expect(container.querySelectorAll('div[title^="Era Vargas"]').length).toBe(1)
     expect(container.textContent).toMatch(/não cabem? neste zoom/)
     expect(container.textContent).toContain('Mostrando de 1440 a 2030')
@@ -33,7 +33,7 @@ describe('Linha do tempo (componente)', () => {
   it('vista completa: da Antiguidade até hoje, com as eras antigas e anos antes de Cristo', () => {
     const { container } = render(<LinhaDoTempo {...props} vista={VISTA_TOTAL} onVista={() => {}} onSelecionar={() => {}} />)
     const nomes = botoesDoEixo(container).map((b) => b.getAttribute('aria-label') as string)
-    expect(nomes.some((n) => n.startsWith('Invenção da escrita'))).toBe(true)
+    expect(nomes.some((n) => n.includes('Invenção da escrita'))).toBe(true)
     expect(container.querySelectorAll('div[title^="Idade Antiga"]').length).toBe(1)
     expect(container.querySelectorAll('div[title^="Idade Média"]').length).toBe(1)
     expect(container.textContent).toContain('2000 a.C.')
@@ -44,13 +44,13 @@ describe('Linha do tempo (componente)', () => {
   it('ao aproximar numa janela curta, todos os acontecimentos do período aparecem', () => {
     const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1925, s: 20 }} onVista={() => {}} onSelecionar={() => {}} />)
     const nomes = botoesDoEixo(container).map((b) => b.getAttribute('aria-label') as string)
-    for (const id of ['m-rev-russa', 'b-modernismo', 'm-versalhes', 'm-crise-1929']) expect(nomes.some((n) => n.startsWith(evento(id).titulo)), id).toBe(true)
+    for (const id of ['m-rev-russa', 'b-modernismo', 'm-versalhes', 'm-crise-1929']) expect(nomes.some((n) => n.includes(evento(id).titulo)), id).toBe(true)
     expect(container.textContent).not.toMatch(/não cabem? neste zoom/)
   })
   it('clicar em um acontecimento o seleciona; o selecionado fica marcado', () => {
     const escolher = vi.fn()
     const { container, rerender } = render(<LinhaDoTempo {...props} onVista={() => {}} onSelecionar={escolher} />)
-    const b = botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.startsWith('Independência do Brasil')) as HTMLElement
+    const b = botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.includes('Independência do Brasil')) as HTMLElement
     fireEvent.click(b)
     expect(escolher).toHaveBeenCalledWith('b-independencia')
     rerender(<LinhaDoTempo {...props} selecionado="b-independencia" onVista={() => {}} onSelecionar={escolher} />)
@@ -64,7 +64,7 @@ describe('Linha do tempo (componente)', () => {
       return <LinhaDoTempo {...props} selecionado={sel} onVista={() => {}} onSelecionar={setSel} onDetalhes={detalhes} />
     }
     const { container } = render(<Teste />)
-    const abrir = () => fireEvent.click(botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.startsWith('Revolução Francesa')) as HTMLElement)
+    const abrir = () => fireEvent.click(botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.includes('Revolução Francesa')) as HTMLElement)
     abrir()
     const ficha = screen.getByRole('dialog', { name: 'Revolução Francesa' })
     expect(ficha.textContent).toContain('Gatilho')
@@ -82,7 +82,7 @@ describe('Linha do tempo (componente)', () => {
   })
   it('processo longo, sem gatilho único: a ficha mostra marcos e pessoas, sem o bloco de gatilho', () => {
     const { container } = render(<LinhaDoTempo {...props} vista={{ c: 1800, s: 120 }} selecionado="m-rev-industrial" onVista={() => {}} onSelecionar={() => {}} />)
-    fireEvent.click(botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.startsWith('Revolução Industrial')) as HTMLElement)
+    fireEvent.click(botoesDoEixo(container).find((x) => x.getAttribute('aria-label')?.includes('Revolução Industrial')) as HTMLElement)
     const ficha = screen.getByRole('dialog', { name: 'Revolução Industrial' })
     expect(ficha.textContent).not.toContain('Gatilho')
     expect(ficha.textContent).toContain('Marcos')
@@ -274,17 +274,17 @@ describe('Laboratório', () => {
     const r = noRouter(<Laboratorio />, '/?tela=intro&c=1822&s=20')
     expect(r.container.textContent).toContain('Mostrando de 1812 a 1832')
     const botoes = botoesDoEixo(r.container).map((b) => b.getAttribute('aria-label') as string)
-    expect(botoes.some((n) => n.startsWith('Independência do Brasil'))).toBe(true)
+    expect(botoes.some((n) => n.includes('Independência do Brasil'))).toBe(true)
     const so = noRouter(<Laboratorio />, '/?tela=intro&reg=brasil')
     const nomes = botoesDoEixo(so.container).map((b) => b.getAttribute('aria-label') as string)
-    expect(nomes.some((n) => n.startsWith('Revolução Francesa'))).toBe(false)
-    expect(nomes.some((n) => n.startsWith('Independência do Brasil'))).toBe(true)
+    expect(nomes.some((n) => n.includes('Revolução Francesa'))).toBe(false)
+    expect(nomes.some((n) => n.includes('Independência do Brasil'))).toBe(true)
   })
   it('Introdução: filtro por tipo tira os acontecimentos desse tipo', () => {
     noRouter(<Laboratorio />, '/?tela=intro&c=1930&s=60&gue=0')
     const nomes = botoesDoEixo(document.body).map((b) => b.getAttribute('aria-label') as string)
-    expect(nomes.some((n) => n.startsWith('Segunda Guerra Mundial'))).toBe(false)
-    expect(nomes.some((n) => n.startsWith('Era Vargas'))).toBe(true)
+    expect(nomes.some((n) => n.includes('Segunda Guerra Mundial'))).toBe(false)
+    expect(nomes.some((n) => n.includes('Era Vargas'))).toBe(true)
   })
   it('Introdução: os botões Aproximar e Afastar mudam a extensão mostrada', () => {
     noRouter(<Laboratorio />, '/?tela=intro&c=1800&s=200')
