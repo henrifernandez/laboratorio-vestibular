@@ -67,3 +67,15 @@ As funções em `api/` guardam contas e progresso num Redis (Upstash). Sem o ban
 3. Opcional: defina `CODIGO_CONVITE` para exigir um código ao criar conta (útil se o endereço for divulgado em público).
 
 Como funciona: a senha é guardada com scrypt e sal aleatório; a sessão é um cookie `HttpOnly` cujo valor só existe no navegador (o banco guarda o resumo SHA-256); há limite de tentativas por endereço e por nome; os pedidos que alteram dados exigem JSON e a mesma origem do site. Não há e-mail, então não existe recuperação de senha. O progresso de cada aparelho é juntado ao da conta ao entrar (vale, por desafio, o registro com mais tentativas). A conta pode ser excluída na página **Minha conta**.
+
+## Licença e créditos
+
+Código sob a licença [MIT](LICENSE): você pode usar, copiar e modificar, mantendo o aviso de copyright.
+
+O texto das explicações foi escrito para este projeto, sem citações literais de autores. Se achar um erro de conteúdo (um dado, uma data, uma explicação), abra uma *issue*.
+
+Feito com bibliotecas de código aberto: React, Vite, React Router, Mafs, KaTeX, mathjs, d3-geo, three.js, dnd-kit, motion e lucide-react (MIT, ISC e Apache-2.0). As fontes Inter e Fraunces (via Fontsource) usam a licença OFL. Os contornos de países vêm do pacote `world-atlas` (dados do Natural Earth, domínio público).
+
+## Contribuindo
+
+Sugestões e correções são bem-vindas por *issue* ou *pull request*. Antes de enviar, rode `npm run typecheck`, `npm run lint` e `npm test`. Para um tema novo, siga o padrão dos que já existem em `src/materias/` (cálculo testado, geradores de desafio conferidos contra um cálculo independente).
