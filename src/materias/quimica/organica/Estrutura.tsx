@@ -1,4 +1,3 @@
-import { COR_ELEMENTO } from '../comum/elementos'
 import { hidrogenios, type Atomo, type Molecula } from './molecula'
 
 interface Props {
@@ -68,7 +67,7 @@ export function Estrutura({ mol, descricao, mostrarC = false, largura, escala = 
       {mol.atomos.map((a) => (destaque[a.id] ? <circle key={`d${a.id}`} cx={a.x} cy={a.y} r={13} fill={destaque[a.id]} opacity={0.35} /> : null))}
       {linhas}
       {mol.atomos.filter(comRotulo).map((a) => (
-        <text key={a.id} x={a.x} y={a.y + 5} textAnchor="middle" fontSize={16} fontWeight={700} fill={a.el === 'C' ? 'var(--ink)' : (COR_TEXTO[a.el] ?? COR_ELEMENTO[a.el])} stroke="var(--surface)" strokeWidth={4} paintOrder="stroke" style={{ fontFamily: 'var(--font-texto)' }}>
+        <text key={a.id} x={a.x} y={a.y + 5} textAnchor="middle" fontSize={16} fontWeight={700} fill={COR_TEXTO[a.el] ?? 'var(--ink)'} stroke="var(--surface)" strokeWidth={4} paintOrder="stroke" style={{ fontFamily: 'var(--font-texto)' }}>
           {rotulo(a)}
         </text>
       ))}
