@@ -62,7 +62,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <main id="conteudo" tabIndex={-1} className="pb-16">
+      <main id="conteudo" tabIndex={-1} className="min-h-[calc(100vh-4rem)] pb-16">
         {children}
       </main>
       <footer className="border-t border-[var(--line)] py-6 text-sm text-[var(--ink-muted)]">

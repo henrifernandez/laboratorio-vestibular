@@ -1,8 +1,15 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { MATERIAS } from '@/conteudo/materias'
 import { salvarProgresso, type Progresso as TipoProgresso } from '@/desafios/progresso'
+import { carregarTema } from '@/materias/registro'
 import Progresso from './Progresso'
+
+// espia o carregamento dos temas, para conferir que a página não o repete sem parar
+vi.mock('@/materias/registro', async (original) => {
+  const m = await original<typeof import('@/materias/registro')>()
+  return { ...m, carregarTema: vi.fn(m.carregarTema) }
+})
 
 const r = (tentativas: number, acertos: number) => ({ tentativas, acertos, ultimo: acertos > 0, data: '2026-10-14' })
 const abrir = () =>
@@ -14,7 +21,10 @@ const abrir = () =>
 const funcoes = MATERIAS.find((m) => m.id === 'matematica')?.temas.find((t) => t.id === 'funcoes')
 
 describe('Meu progresso', () => {
-  beforeEach(() => localStorage.clear())
+  beforeEach(() => {
+    localStorage.clear()
+    vi.mocked(carregarTema).mockClear()
+  })
 
   it('sem respostas: mensagem de início, sem visão geral, e as matérias já listadas', () => {
     abrir()
@@ -39,7 +49,7 @@ describe('Meu progresso', () => {
     const aberta = document.querySelector('details[open]') as HTMLElement
     expect(aberta).toHaveTextContent('Matemática')
     const linha = within(aberta).getByRole('link', { name: funcoes?.titulo as string }).closest('tr') as HTMLElement
-    expect(within(linha).getAllByRole('cell').map((c) => c.textContent)).toEqual([`1 de ${funcoes?.totalNiveis}`, '5', '3', '60%'])
+    expect(within(linha).getAllByRole('cell').map((c) => c.textContent)).toEqual([`1 de ${funcoes?.totalNiveis}`, '3 de 5', '60%'])
     expect(within(aberta).getByRole('progressbar', { name: 'Progresso em Matemática' })).toBeInTheDocument()
 
     expect(screen.getByRole('link', { name: 'Revisar só o que já errei' })).toHaveAttribute('href', '/revisao?erros=1')
@@ -56,5 +66,13 @@ describe('Meu progresso', () => {
     expect(itens).toHaveLength(8)
     expect(itens[0]).toHaveTextContent('10 erros')
     expect(itens[7]).toHaveTextContent('3 erros')
+  })
+
+  it('carrega cada tema com progresso uma vez só (não entra em laço de renderização)', async () => {
+    salvarProgresso({ 'matematica/funcoes/grafico:1': r(2, 0), 'quimica/organica/nome:1': r(1, 0) })
+    abrir()
+    await waitFor(() => expect(vi.mocked(carregarTema)).toHaveBeenCalled())
+    await new Promise((fim) => setTimeout(fim, 400))
+    expect(vi.mocked(carregarTema).mock.calls.length).toBeLessThanOrEqual(2)
   })
 })

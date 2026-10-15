@@ -106,25 +106,23 @@ export default function Progresso() {
                   <caption className="sr-only">Temas de {m.materia.nome}</caption>
                   <thead>
                     <tr className="border-b border-[var(--line)]">
-                      <th scope="col" className="p-3">Tema</th>
-                      <th scope="col" className="p-3 text-right">Resolvidos</th>
-                      <th scope="col" className="p-3 text-right">Tentativas</th>
-                      <th scope="col" className="p-3 text-right">Acertos</th>
-                      <th scope="col" className="p-3 text-right">Taxa</th>
+                      <th scope="col" className="p-2 sm:p-3">Tema</th>
+                      <th scope="col" className="p-2 text-right sm:p-3">Resolvidos</th>
+                      <th scope="col" className="p-2 text-right sm:p-3">Acertos</th>
+                      <th scope="col" className="p-2 text-right sm:p-3">Taxa</th>
                     </tr>
                   </thead>
                   <tbody>
                     {m.temas.map((t) => (
                       <tr key={t.tema.id} className="border-b border-[var(--line)] last:border-0">
-                        <th scope="row" className="p-3 font-semibold">
+                        <th scope="row" className="p-2 font-semibold sm:p-3">
                           <Link to={`/materia/${m.materia.id}/${t.tema.id}?aba=desafios`}>{t.tema.titulo}</Link>
                         </th>
-                        <td className="num p-3 text-right">
+                        <td className="num p-2 text-right sm:p-3">
                           {t.feitos} de {t.total}
                         </td>
-                        <td className="num p-3 text-right">{t.tentativas}</td>
-                        <td className="num p-3 text-right">{t.acertos}</td>
-                        <td className="num p-3 text-right">{t.tentativas ? `${taxaDeAcerto(t.acertos, t.tentativas)}%` : '—'}</td>
+                        <td className="num p-2 text-right sm:p-3">{t.tentativas ? `${t.acertos} de ${t.tentativas}` : '—'}</td>
+                        <td className="num p-2 text-right sm:p-3">{t.tentativas ? `${taxaDeAcerto(t.acertos, t.tentativas)}%` : '—'}</td>
                       </tr>
                     ))}
                   </tbody>

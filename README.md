@@ -20,6 +20,12 @@ npm run lint       # ESLint
 npm run build      # gera dist/
 ```
 
+### Acessibilidade
+
+- `src/design/contraste.test.ts` calcula o contraste (WCAG) das cores dos tokens nos temas claro e escuro: texto 4,5:1 e figuras 3:1. Ao mudar uma cor em `tokens.css`, o teste avisa se ela deixar de passar.
+- Regiões com rolagem horizontal e pontos arrastáveis dos gráficos recebem foco e nome automaticamente (`src/lib/useRolagemTeclado.ts`).
+- A fase de fechamento foi auditada com axe-core (WCAG 2.2 AA) em 375 e 1280 px, nos dois temas, em todas as páginas de tema; sem violações.
+
 ## Estrutura
 
 ```

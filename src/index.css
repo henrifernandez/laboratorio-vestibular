@@ -27,6 +27,8 @@
 html {
   background: var(--paper);
   -webkit-text-size-adjust: 100%;
+  /* reserva o espaço da barra de rolagem: ela aparece quando a página cresce e não empurra o conteúdo para o lado */
+  scrollbar-gutter: stable;
 }
 
 body {
