@@ -1,5 +1,9 @@
 # Laboratório Vestibular
 
+[![CI](https://github.com/henrifernandez/laboratorio-vestibular/actions/workflows/ci.yml/badge.svg)](https://github.com/henrifernandez/laboratorio-vestibular/actions/workflows/ci.yml) ![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-2F7F73)
+
+**Site online:** [laboratorio-vestibular.vercel.app](https://laboratorio-vestibular.vercel.app)
+
 Site de estudo interativo para o vestibular: cada matéria vira um laboratório em que você aprende **mexendo** nos conceitos (arrastar pontos, ajustar coeficientes, errar e ver o que muda), em vez de fazer simulados.
 
 Site em Vite + React + TypeScript. Funciona 100% sem conta (o progresso fica no `localStorage` do navegador). Opcionalmente, há login só com nome e senha, que guarda o progresso no servidor (funções em `api/`, ver "Contas" abaixo).
